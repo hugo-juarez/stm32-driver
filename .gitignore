@@ -1,6 +1,6 @@
 # STM32 build artifacts
-/Debug/
-/Release/
+Debug/
+Release/
 
 # CubeMX generated files
 *.ioc
