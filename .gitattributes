@@ -1,0 +1,3 @@
+*.ld linguist-generated
+*.s linguist-generated
+*.asm linguist-generated
