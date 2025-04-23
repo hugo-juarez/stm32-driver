@@ -1,3 +1,27 @@
+# STM32 build artifacts
+/Debug/
+/Release/
+
+# CubeMX generated files
+*.ioc
+
+# IDE-specific
+.project
+.cproject
+.settings/
+*.launch
+
+# VSCode
+.vscode/
+
+# CLion
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+
 # Prerequisites
 *.d
 .metadata/
