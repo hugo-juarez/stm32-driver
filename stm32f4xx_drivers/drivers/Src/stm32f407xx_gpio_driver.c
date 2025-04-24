@@ -8,3 +8,174 @@
 #include "stm32f407xx_gpio_driver.h"
 
 
+/**************** PCLK Control ****************
+ *
+ * @fn				- GPIOx_PCLKControl
+ *
+ * @brief			- This functions enables or disables the peripheral clock for the given GPIO
+ *
+ * @param[in]		- base address of the GPIO peripheral
+ * @param[in]		- ENABLE or DISABLE macros
+ * @param[in]		-
+ *
+ * @return			- none
+ *
+ * @note			- none
+ *
+ */
+
+void GPIOx_PCLKControl(GPIOx_RegDef_t* pGPIOx, uint8_t state)
+{
+	if(state == ENABLE)
+	{
+		if(pGPIOx == GPIOA)
+			GPIOA_PCLK_EN();
+
+		else if(pGPIOx == GPIOB)
+			GPIOB_PCLK_EN();
+
+		else if(pGPIOx == GPIOC)
+			GPIOC_PCLK_EN();
+
+		else if(pGPIOx == GPIOD)
+			GPIOD_PCLK_EN();
+
+		else if(pGPIOx == GPIOE)
+			GPIOE_PCLK_EN();
+
+		else if(pGPIOx == GPIOF)
+			GPIOF_PCLK_EN();
+
+		else if(pGPIOx == GPIOG)
+			GPIOG_PCLK_EN();
+
+		else if(pGPIOx == GPIOH)
+			GPIOH_PCLK_EN();
+
+		else if(pGPIOx == GPIOI)
+			GPIOI_PCLK_EN();
+
+		else if(pGPIOx == GPIOJ)
+			GPIOJ_PCLK_EN();
+
+		else if(pGPIOx == GPIOK)
+			GPIOK_PCLK_EN();
+
+	} else {
+
+		if(pGPIOx == GPIOA)
+			GPIOA_PCLK_DI();
+
+		else if(pGPIOx == GPIOB)
+			GPIOB_PCLK_DI();
+
+		else if(pGPIOx == GPIOC)
+			GPIOC_PCLK_DI();
+
+		else if(pGPIOx == GPIOD)
+			GPIOD_PCLK_DI();
+
+		else if(pGPIOx == GPIOE)
+			GPIOE_PCLK_DI();
+
+		else if(pGPIOx == GPIOF)
+			GPIOF_PCLK_DI();
+
+		else if(pGPIOx == GPIOG)
+			GPIOG_PCLK_DI();
+
+		else if(pGPIOx == GPIOH)
+			GPIOH_PCLK_DI();
+
+		else if(pGPIOx == GPIOI)
+			GPIOI_PCLK_DI();
+
+		else if(pGPIOx == GPIOJ)
+			GPIOJ_PCLK_DI();
+
+		else if(pGPIOx == GPIOK)
+			GPIOK_PCLK_DI();
+	}
+}
+
+/**************** GPIO INIT ****************
+ *
+ * @fn				- GPIOx_Init
+ *
+ * @brief			- This functions initilize the registers of a GPIO to a set value by the user
+ *
+ * @param[in]		- handler with pointer of GPIO base address and values to set the registers
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			- none
+ *
+ * @note			- none
+ *
+ */
+
+void GPIOx_Init(GPIOx_Handle_t* pGPIOxHandle){
+
+	uint8_t pin = pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinNumber;
+
+
+	//1 . configure the mode of gpio pin
+	if(pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinMode <= 3){ //Is not an Interrupt
+		pGPIOxHandle->pGPIOx->MODER &= ~(3 << 2*pin);
+		pGPIOxHandle->pGPIOx->MODER |= (pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinMode << 2*pin);
+	}
+	//2 . configure speed
+	pGPIOxHandle->pGPIOx->OSPEEDR &= ~(3 << 2*pin);
+	pGPIOxHandle->pGPIOx->OSPEEDR |= (pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinSpeed << 2*pin);
+
+	//3 . configure the PU/PD settings
+	pGPIOxHandle->pGPIOx->PUPDR &= ~(3 << 2*pin);
+	pGPIOxHandle->pGPIOx->PUPDR |= (pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinPuPdControl << 2*pin);
+
+	//4 . configure the output type
+	pGPIOxHandle->pGPIOx->OTYPER &= ~(1 << pin);
+	pGPIOxHandle->pGPIOx->OTYPER |= (pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinOType << pin);
+
+	//5 . configure the alternate functionality
+	if(!(pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinMode == GPIOx_MODE_ALTFN))
+		return;
+
+	uint8_t offset, index;
+
+	index = pin / 8;
+	offset = 4 * (pin % 8);
+
+	pGPIOxHandle->pGPIOx->AFRx[index] &= ~(0xF << offset);
+	pGPIOxHandle->pGPIOx->AFRx[index] |= (pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinAltFunMode << offset);
+}
+
+/**************** GPIO DEINIT ****************
+ *
+ * @fn				- GPIOx_DeInit
+ *
+ * @brief			- This function resets the default values of the GPIO register
+ *
+ * @param[in]		- GPIO base address
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			- none
+ *
+ * @note			- none
+ *
+ */
+
+void GPIOx_DeInit(GPIOx_RegDef_t* pGPIOx);
+
+// Read
+uint8_t GPIOx_ReadPin(GPIOx_RegDef_t* pGPIOx, uint8_t pin);
+uint16_t GPIOx_ReadPort(GPIOx_RegDef_t* pGPIOx);
+
+// Write
+void GPIOx_WritePin(GPIOx_RegDef_t* pGPIOx, uint8_t pin, uint8_t val);
+void GPIOx_WritePort(GPIOx_RegDef_t* pGPIOx, uint16_t val);
+void GPIOx_TogglePin(GPIOx_RegDef_t* pGPIOx, uint8_t pin);
+
+// Interrupt
+void GPIOx_IRQConfig(uint8_t IRQNumber, uint8_t IRQPrio, uint8_t state);
+void GPIOx_IRQHandling(uint8_t pin);

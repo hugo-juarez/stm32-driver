@@ -13,11 +13,11 @@
 
 typedef struct
 {
-	uint8_t GPIOx_PinNumber;
-	uint8_t GPIOx_PinMode;
-	uint8_t GPIOx_PinSpeed;
-	uint8_t GPIOx_PinPuPdControl;
-	uint8_t GPIOx_PinOPType;
+	uint8_t GPIOx_PinNumber;			//Possible values @GPIOx_PIN_NO
+	uint8_t GPIOx_PinMode;				//Possible values @GPIOx_MODES
+	uint8_t GPIOx_PinSpeed;				//Possible values @GPIO_OSPEED
+	uint8_t GPIOx_PinPuPdControl;		//Possible values @GPIO_PULL_UP_DOWN_REG
+	uint8_t GPIOx_PinOType;			//Possible values @GPIO_OUTPUT_TYPES
 	uint8_t GPIOx_PinAltFunMode;
 } GPIOx_PinConfig_t;
 
@@ -28,6 +28,49 @@ typedef struct
 	GPIOx_PinConfig_t GPIOx_PinConfig;
 
 } GPIOx_Handle_t;
+
+//
+#define GPIOx_PIN_NO_0			0
+#define GPIOx_PIN_NO_1			1
+#define GPIOx_PIN_NO_2			2
+#define GPIOx_PIN_NO_3			3
+#define GPIOx_PIN_NO_4			4
+#define GPIOx_PIN_NO_5			5
+#define GPIOx_PIN_NO_6			6
+#define GPIOx_PIN_NO_7			7
+#define GPIOx_PIN_NO_8			8
+#define GPIOx_PIN_NO_9			9
+#define GPIOx_PIN_NO_10			10
+#define GPIOx_PIN_NO_11			11
+#define GPIOx_PIN_NO_12			12
+#define GPIOx_PIN_NO_13			13
+#define GPIOx_PIN_NO_14			14
+#define GPIOx_PIN_NO_15			15
+
+// GPIOx_MODES
+#define GPIOx_MODE_IN		 	0
+#define GPIOx_MODE_OUT			1
+#define GPIOx_MODE_ALTFN		2
+#define GPIOx_MODE_ANALOG		3
+#define GPIOx_MODE_IT_FT		4
+#define GPIOx_MODE_IT_RT		5
+#define GPIOx_MODE_IT_RFT		6
+
+// GPIO_OUTPUT_TYPES
+#define GPIOx_OUT_TYPE_PP		0
+#define GPIOx_OUT_TYPE_OD		1
+
+// GPIO_OSPEED
+#define GPIOx_OSPEED_LOW		0
+#define GPIOx_OSPEED_MID		1
+#define GPIOx_OSPEED_FAST		2
+#define GPIOx_OSPEED_HIGH		3
+
+// GPIO_PULL_UP_DOWN_REG
+#define GPIOx_PUPDR_NONE		0
+#define GPIOx_PUPDR_UP			1
+#define GPIOx_PUPDR_DOWN		2
+
 
 /*****************************************************************
  * 							APIs!!!!!!
