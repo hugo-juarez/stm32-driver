@@ -165,7 +165,40 @@ void GPIOx_Init(GPIOx_Handle_t* pGPIOxHandle){
  *
  */
 
-void GPIOx_DeInit(GPIOx_RegDef_t* pGPIOx);
+void GPIOx_DeInit(GPIOx_RegDef_t* pGPIOx){
+	if(pGPIOx == GPIOA)
+		GPIOA_REG_RESET();
+
+	else if(pGPIOx == GPIOB)
+		GPIOB_REG_RESET();
+
+	else if(pGPIOx == GPIOC)
+		GPIOC_REG_RESET();
+
+	else if(pGPIOx == GPIOD)
+		GPIOD_REG_RESET();
+
+	else if(pGPIOx == GPIOE)
+		GPIOE_REG_RESET();
+
+	else if(pGPIOx == GPIOF)
+		GPIOF_REG_RESET();
+
+	else if(pGPIOx == GPIOG)
+		GPIOG_REG_RESET();
+
+	else if(pGPIOx == GPIOH)
+		GPIOH_REG_RESET();
+
+	else if(pGPIOx == GPIOI)
+		GPIOI_REG_RESET();
+
+	else if(pGPIOx == GPIOJ)
+		GPIOJ_REG_RESET();
+
+	else if(pGPIOx == GPIOK)
+		GPIOK_REG_RESET();
+}
 
 // Read
 uint8_t GPIOx_ReadPin(GPIOx_RegDef_t* pGPIOx, uint8_t pin);
