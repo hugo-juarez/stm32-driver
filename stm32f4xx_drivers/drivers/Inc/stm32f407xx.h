@@ -8,9 +8,15 @@
 #ifndef INC_STM32F407XX_H_
 #define INC_STM32F407XX_H_
 
-#include <stdio.h>
+#include <stdint.h>
 
 #define __vo volatile
+
+//Generic macros
+#define ENABLE				1
+#define DISABLE				0
+#define SET					ENABLE
+#define RESET				DISABLE
 
 /***********************************************************/
 /******************** BASE ADDRESSES ***********************/
