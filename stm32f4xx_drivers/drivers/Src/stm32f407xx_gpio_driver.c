@@ -200,14 +200,105 @@ void GPIOx_DeInit(GPIOx_RegDef_t* pGPIOx){
 		GPIOK_REG_RESET();
 }
 
-// Read
-uint8_t GPIOx_ReadPin(GPIOx_RegDef_t* pGPIOx, uint8_t pin);
-uint16_t GPIOx_ReadPort(GPIOx_RegDef_t* pGPIOx);
+/**************** READ PIN ****************
+ *
+ * @fn				- GPIOx_ReadPin
+ *
+ * @brief			- This function reads the value at the pin
+ *
+ * @param[in]		- GPIO base address
+ * @param[in]		- PIN number
+ * @param[in]		-
+ *
+ * @return			- INPUT value at PINx 1/0
+ *
+ * @note			- none
+ *
+ */
+uint8_t GPIOx_ReadPin(GPIOx_RegDef_t* pGPIOx, uint8_t pin){
+	return (uint8_t) ((pGPIOx->IDR >> pin) & 0x1);
+}
 
-// Write
-void GPIOx_WritePin(GPIOx_RegDef_t* pGPIOx, uint8_t pin, uint8_t val);
-void GPIOx_WritePort(GPIOx_RegDef_t* pGPIOx, uint16_t val);
-void GPIOx_TogglePin(GPIOx_RegDef_t* pGPIOx, uint8_t pin);
+/**************** READ PORT ****************
+ *
+ * @fn				- GPIOx_ReadPort
+ *
+ * @brief			- This function reads the value at the 15 GPIO port pins
+ *
+ * @param[in]		- GPIO base address
+ * @param[in]		-
+ * @param[in]		-
+ *
+ * @return			- 16 BIT value where each bit represents an input of the port
+ *
+ * @note			- none
+ *
+ */
+uint16_t GPIOx_ReadPort(GPIOx_RegDef_t* pGPIOx){
+	return (uint16_t) pGPIOx->IDR;
+}
+
+/**************** WRITE PIN ****************
+ *
+ * @fn				- GPIOx_WritePin
+ *
+ * @brief			- This function writes the value at the pin in the selected port
+ *
+ * @param[in]		- GPIO base address
+ * @param[in]		- PIN number
+ * @param[in]		- Value
+ *
+ * @return			- none
+ *
+ * @note			- none
+ *
+ */
+void GPIOx_WritePin(GPIOx_RegDef_t* pGPIOx, uint8_t pin, uint8_t val){
+	if(val == SET){
+		pGPIOx->ODR |= (1 << pin);
+	}else{
+		pGPIOx->ODR &= ~(1 << pin);
+	}
+}
+
+/**************** WRITE PORT ****************
+ *
+ * @fn				- GPIOx_WritePort
+ *
+ * @brief			- This function writes the value at the selected port
+ *
+ * @param[in]		- GPIO base address
+ * @param[in]		- Value
+ * @param[in]		-
+ *
+ * @return			- none
+ *
+ * @note			- none
+ *
+ */
+void GPIOx_WritePort(GPIOx_RegDef_t* pGPIOx, uint16_t val){
+	pGPIOx->ODR &= ~(0xFFFF << 0);
+	pGPIOx->ODR |= val;
+}
+
+/**************** TOGGLE PIN ****************
+ *
+ * @fn				- GPIOx_TogglePin
+ *
+ * @brief			- This function toggles the value at the selected pin
+ *
+ * @param[in]		- GPIO base address
+ * @param[in]		- PIN
+ * @param[in]		-
+ *
+ * @return			- none
+ *
+ * @note			- none
+ *
+ */
+void GPIOx_TogglePin(GPIOx_RegDef_t* pGPIOx, uint8_t pin){
+	pGPIOx->ODR ^= (1 << pin);
+}
 
 // Interrupt
 void GPIOx_IRQConfig(uint8_t IRQNumber, uint8_t IRQPrio, uint8_t state);
