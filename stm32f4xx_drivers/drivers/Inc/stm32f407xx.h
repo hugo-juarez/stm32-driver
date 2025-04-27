@@ -162,6 +162,19 @@ typedef struct {
 
 } EXTIx_RegDef_t;
 
+/***********************************************************/
+/************************ SYSCFG ***************************/
+/***********************************************************/
+
+#define SYSCFG						((SYSCFG_RegDef_t*)SYSCFG_BASEADDR)
+
+typedef struct {
+	__vo uint32_t MEMRMP;				//Memory remap register
+	__vo uint32_t PMC;					//Peripheral mode configuration register
+	__vo uint32_t EXTICR[4];			//External interrupt configuration registers EXT0:3 per register
+	uint32_t RESERVED[2];
+	__vo uint32_t CMPCR;				//Compensation cell control register
+} SYSCFG_RegDef_t;
 
 /***********************************************************/
 /**************** PERIPHERAL CLOCK EN/DI *******************/
