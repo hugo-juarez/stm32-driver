@@ -264,5 +264,19 @@ typedef struct {
 #define GPIOJ_REG_RESET()			do{ (RCC->AHB1RSTR |= 1 << 9);	(RCC->AHB1RSTR &= ~(1 << 9)); } while(0)
 #define GPIOK_REG_RESET()			do{ (RCC->AHB1RSTR |= 1 << 10);	(RCC->AHB1RSTR &= ~(1 << 10)); } while(0)
 
+/***********************************************************/
+/********************* PORT CODE FUNC **********************/
+/***********************************************************/
+
+#define GPIO_BASEADDR_TO_PORT(x)	(	(x == GPIOA) ? 0 :\
+										(x == GPIOB) ? 1 :\
+										(x == GPIOC) ? 2 :\
+										(x == GPIOD) ? 3 :\
+										(x == GPIOE) ? 4 :\
+										(x == GPIOF) ? 5 :\
+										(x == GPIOG) ? 6 :\
+										(x == GPIOH) ? 7 :\
+										(x == GPIOI) ? 8 : 0	)
+
 
 #endif /* INC_STM32F407XX_H_ */

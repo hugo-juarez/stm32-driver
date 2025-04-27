@@ -123,6 +123,36 @@ void GPIOx_Init(GPIOx_Handle_t* pGPIOxHandle){
 	if(pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinMode <= 3){ //Is not an Interrupt
 		pGPIOxHandle->pGPIOx->MODER &= ~(3 << 2*pin);
 		pGPIOxHandle->pGPIOx->MODER |= (pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinMode << 2*pin);
+	} else{
+
+		// 1. configure risign or falling edge
+
+		if(pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinMode == GPIOx_MODE_IT_FT){
+			EXTI->FTSR |= (1 << pin);
+			EXTI->RTSR &= ~(1 << pin);
+		}else if(pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinMode == GPIOx_MODE_IT_RT){
+			EXTI->FTSR &= ~(1 << pin);
+			EXTI->RTSR |= (1 << pin);
+		} else if(pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinMode == GPIOx_MODE_IT_RFT){
+			EXTI->FTSR |= (1 << pin);
+			EXTI->RTSR |= (1 << pin);
+		}
+
+		// 2. configure GPIO port
+		uint8_t temp1 = pin / 4;
+		uint8_t temp2 = pin % 4;
+
+		uint8_t port = GPIO_BASEADDR_TO_PORT(pGPIOxHandle->pGPIOx);
+
+		SYSCFG_PCLK_EN();
+
+		SYSCFG->EXTICR[temp1] &= ~(0xF << temp2*4);
+		SYSCFG->EXTICR[temp1] |= (port << temp2*4);
+
+		// 3. Unmask EXTIx pin
+		EXTI->IMR |= (1 << pin);
+
+
 	}
 	//2 . configure speed
 	pGPIOxHandle->pGPIOx->OSPEEDR &= ~(3 << 2*pin);
