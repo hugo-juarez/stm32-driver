@@ -145,6 +145,24 @@ typedef struct{
 	__vo uint32_t AFRx[2];				//GPIO alternate function low/high register
 } GPIOx_RegDef_t;
 
+
+/***********************************************************/
+/************************* EXTI ****************************/
+/***********************************************************/
+
+#define EXTI						((EXTIx_RegDef_t*)EXTI_BASEADDR)
+
+typedef struct {
+	__vo uint32_t IMR;					//Interrupt Mask Register
+	__vo uint32_t EMR;					//Event Mask Register
+	__vo uint32_t RTSR;					//Rising trigger selection register
+	__vo uint32_t FTSR;					//Falling trigger selection register
+	__vo uint32_t SWIER;				//Software interrupt event register
+	__vo uint32_t PR;					//Pending Register
+
+} EXTIx_RegDef_t;
+
+
 /***********************************************************/
 /**************** PERIPHERAL CLOCK EN/DI *******************/
 /***********************************************************/
