@@ -92,7 +92,8 @@ void GPIOx_WritePort(GPIOx_RegDef_t* pGPIOx, uint16_t val);
 void GPIOx_TogglePin(GPIOx_RegDef_t* pGPIOx, uint8_t pin);
 
 // Interrupt
-void GPIOx_IRQConfig(uint8_t IRQNumber, uint8_t IRQPrio, uint8_t state);
+void GPIOx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);
+
 void GPIOx_IRQHandling(uint8_t pin);
 
 

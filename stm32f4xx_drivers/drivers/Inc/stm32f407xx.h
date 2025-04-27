@@ -18,6 +18,31 @@
 #define SET					ENABLE
 #define RESET				DISABLE
 
+
+/*********************************** ARM CORTEX M4 REGISTERS ***********************************/
+
+/***********************************************************/
+/************************* NVIC ****************************/
+/***********************************************************/
+
+#define NVIC_BASEADDR				0xE000E100UL
+#define NVIC						((NVIC_RefDef_t*)NVIC_BASEADDR)
+#define NO_PR_BITS_IMPLEMENTED		4	//Number of priority pins implement
+
+typedef struct {
+	__vo uint32_t ISER[8];
+	uint32_t RESERVED0[24];
+	__vo uint32_t ICER[8];
+	uint32_t RESERVED1[24];
+	__vo uint32_t ISPR[8];
+	uint32_t RESERVED2[24];
+	__vo uint32_t ICPR[8];
+	uint32_t RESERVED3[24];
+	__vo uint32_t IABR[8];
+	uint32_t RESERVED4[56];
+	__vo uint8_t IPR[240];
+}NVIC_RefDef_t;
+
 /***********************************************************/
 /******************** BASE ADDRESSES ***********************/
 /***********************************************************/
@@ -277,6 +302,18 @@ typedef struct {
 										(x == GPIOG) ? 6 :\
 										(x == GPIOH) ? 7 :\
 										(x == GPIOI) ? 8 : 0	)
+
+/***********************************************************/
+/********************** IRQ EXTI NO ************************/
+/***********************************************************/
+
+#define IRQ_NO_EXTI0				6
+#define IRQ_NO_EXTI1				7
+#define IRQ_NO_EXTI2				8
+#define IRQ_NO_EXTI3				9
+#define IRQ_NO_EXTI4				10
+#define IRQ_NO_EXTI9_5				23
+#define IRQ_NO_EXTI15_10			40
 
 
 #endif /* INC_STM32F407XX_H_ */

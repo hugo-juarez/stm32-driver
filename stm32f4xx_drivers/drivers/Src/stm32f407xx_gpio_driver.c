@@ -331,5 +331,29 @@ void GPIOx_TogglePin(GPIOx_RegDef_t* pGPIOx, uint8_t pin){
 }
 
 // Interrupt
-void GPIOx_IRQConfig(uint8_t IRQNumber, uint8_t IRQPrio, uint8_t state);
-void GPIOx_IRQHandling(uint8_t pin);
+void GPIOx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state){
+
+	uint8_t temp1 = IRQNumber / 32;
+	uint8_t temp2 = IRQNumber % 32;
+
+	if(state == ENABLE){
+		NVIC->ISER[temp1] |= (1 << temp2);
+	} else {
+		NVIC->ICER[temp1] |= (1 << temp2);
+	}
+}
+
+void GPIOx_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority){
+
+	NVIC->IPR[IRQNumber] = (IRQPriority << (8 - NO_PR_BITS_IMPLEMENTED));
+
+}
+
+void GPIOx_IRQHandling(uint8_t pin){
+
+	//Clear PR register on EXTI since it is not done automatically to allow for next interrupt
+	if(EXTI->PR & (1 << pin)){
+		//clear
+		EXTI->PR |= (1<<pin);
+	}
+}
