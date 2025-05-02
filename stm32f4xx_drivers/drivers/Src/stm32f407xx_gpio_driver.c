@@ -116,6 +116,8 @@ void GPIOx_PCLKControl(GPIOx_RegDef_t* pGPIOx, uint8_t state)
 
 void GPIOx_Init(GPIOx_Handle_t* pGPIOxHandle){
 
+	GPIOx_PCLKControl(pGPIOxHandle->pGPIOx, ENABLE);
+
 	uint8_t pin = pGPIOxHandle->GPIOx_PinConfig.GPIOx_PinNumber;
 
 

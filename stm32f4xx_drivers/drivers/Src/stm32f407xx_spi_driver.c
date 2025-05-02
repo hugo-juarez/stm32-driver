@@ -58,6 +58,7 @@ void SPIx_PCLKControl(SPIx_RegDef_t* pSPIx, uint8_t state){
  */
 void SPIx_Init(SPIx_Handle_t* pSPIHandle){
 	//Debbuging tip if the peripheral is not in master it won't produce the sclk
+	SPIx_PCLKControl(pSPIHandle->pSPIx, ENABLE);
 
 	uint32_t tempreg = 0;
 
@@ -81,8 +82,7 @@ void SPIx_Init(SPIx_Handle_t* pSPIHandle){
 	}
 
 	//SPI Clock Speed
-	tempreg |= ~(pSPIHandle->SPIConfig.SPI_SclkSpeed << 3);
-
+	tempreg |= (pSPIHandle->SPIConfig.SPI_SclkSpeed << 3);
 
 	// Data Frame Format
 	tempreg |= (pSPIHandle->SPIConfig.SPI_DFF << 11);
@@ -124,3 +124,75 @@ void SPIx_DeInit(SPIx_RegDef_t* pSPIx){
 	else if(pSPIx == SPI3)
 		SPI3_REG_RESET();
 }
+
+/**************** SPI SendData ****************
+ *
+ * @fn				- SPI_SendData (Blocking/Polling Call)
+ *
+ * @brief			- This function transmits data of size len into Shift register for it to be reached on the outside world
+ *
+ * @param[in]		- SPI base address
+ * @param[in]		- Data to be transmitted
+ * @param[in]		- Number of bytes transmitted
+ *
+ * @return			- none
+ *
+ * @note			- none
+ *
+ */
+void SPI_SendData(SPIx_RegDef_t* pSPIx, uint8_t* pTxBuffer, uint32_t len){
+
+	while(len > 0){
+
+		//Check for TXE flag - Transmitter buffer is empty
+		while( ! ( pSPIx->SR & (1 << 1) ));
+
+		//Check if 8bit or 16bit
+		if( (pSPIx->CR[0] & (1 << 11) ) ){
+			//16 bit
+			pSPIx->DR = *((uint16_t*)pTxBuffer);
+			len--;
+			(uint16_t*)pTxBuffer++;
+		} else {
+			//8 bit
+			pSPIx->DR = *pTxBuffer;
+			pTxBuffer++;
+		}
+		len--;
+	}
+
+}
+
+/**************** SPI Peripheral Ctrl ****************
+ *
+ * @fn				- SPI_PeripheralCtrl
+ *
+ * @brief			- Enables or disables SPI peripheral for starting communication or stop for configuration
+ *
+ * @param[in]		- SPI base address
+ * @param[in]		- ENABLE or DISABLE
+ * @param[in]		-
+ *
+ * @return			- none
+ *
+ * @note			- none
+ *
+ */
+
+void SPI_PeripheralCtrl(SPIx_RegDef_t* pSPIx, uint8_t state){
+	if(state == ENABLE){
+		pSPIx->CR[0] |= (1 << 6);
+	}else{
+		pSPIx->CR[0] &= ~(1 << 6);
+	}
+}
+
+void SPI_SSIConfig(SPIx_RegDef_t* pSPIx, uint8_t state) {
+	if(state == ENABLE){
+		pSPIx->CR[0] |= (1 << 8);
+	}else{
+		pSPIx->CR[0] &= ~(1 << 8);
+	}
+}
+
+
