@@ -37,8 +37,8 @@ typedef struct{
 
 #define SPI_BUS_CONFIG_FD						1
 #define SPI_BUS_CONFIG_HD						2
-#define SPI_BUS_CONFIG_S_TXONLY					3
-#define SPI_BUS_CONFIG_S_RXONLY					4
+//#define SPI_BUS_CONFIG_S_TXONLY					3 //This is the same as full duplex without MISO line
+#define SPI_BUS_CONFIG_S_RXONLY					3
 
 // @SPI_SclkSpeed
 

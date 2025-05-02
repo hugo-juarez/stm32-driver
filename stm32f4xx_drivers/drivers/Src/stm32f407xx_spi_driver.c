@@ -57,6 +57,46 @@ void SPIx_PCLKControl(SPIx_RegDef_t* pSPIx, uint8_t state){
  *
  */
 void SPIx_Init(SPIx_Handle_t* pSPIHandle){
+	//Debbuging tip if the peripheral is not in master it won't produce the sclk
+
+	uint32_t tempreg = 0;
+
+	// Set Master or Slave mode
+	tempreg |= (pSPIHandle->SPIConfig.SPI_DeviceMode << 2);
+
+	// BUS Mode
+	switch(pSPIHandle->SPIConfig.SPI_BusConfig){
+		case SPI_BUS_CONFIG_FD:
+			tempreg &= ~(1 << 15);
+			break;
+		case SPI_BUS_CONFIG_HD:
+			tempreg |= (1 << 15);
+			break;
+		case SPI_BUS_CONFIG_S_RXONLY:
+			tempreg &= ~(1 << 15);
+			tempreg |= (1 << 10);
+			break;
+		default:
+			break;
+	}
+
+	//SPI Clock Speed
+	tempreg |= ~(pSPIHandle->SPIConfig.SPI_SclkSpeed << 3);
+
+
+	// Data Frame Format
+	tempreg |= (pSPIHandle->SPIConfig.SPI_DFF << 11);
+
+	// CPOL
+	tempreg |= (pSPIHandle->SPIConfig.SPI_CPOL << 1);
+
+	// CPHA
+	tempreg |= (pSPIHandle->SPIConfig.SPI_CPHA << 0);
+
+	// SSM
+	tempreg |= (pSPIHandle->SPIConfig.SPI_SSM << 9);
+
+	pSPIHandle->pSPIx->CR[0] = tempreg;
 
 }
 
