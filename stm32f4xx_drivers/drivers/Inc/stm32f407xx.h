@@ -170,6 +170,24 @@ typedef struct{
 	__vo uint32_t AFRx[2];				//GPIO alternate function low/high register
 } GPIOx_RegDef_t;
 
+/***********************************************************/
+/************************** SPI ****************************/
+/***********************************************************/
+
+#define SPI1						((SPIx_RegDef_t*)SPI1_BASEADDR)
+#define SPI2						((SPIx_RegDef_t*)SPI2_BASEADDR)
+#define SPI3						((SPIx_RegDef_t*)SPI3_BASEADDR)
+
+typedef struct {
+	__vo uint32_t CR[2];				//SPI control register
+	__vo uint32_t SR;					//SPI status register
+	__vo uint32_t DR;					//SPI data register
+	__vo uint32_t CRCPR;				//SPI CRC polynomial register
+	__vo uint32_t RXCRCR;				//RX CRC register
+	__vo uint32_t TXCRCR;				//TX CRC register
+	__vo uint32_t I2SCFGR;				//SPI_I2S configuration register
+	__vo uint32_t I2SPR;				//SPI_I2S prescaler register
+} SPIx_RegDef_t;
 
 /***********************************************************/
 /************************* EXTI ****************************/
