@@ -28,4 +28,29 @@ typedef struct{
 	SPIx_Config_t SPIConfig;
 }SPIx_Handle_t;
 
+// @SPI_DeviceMode
+
+/*****************************************************************
+ * 							APIs!!!!!!
+ *****************************************************************/
+
+// PCLK Control
+void SPIx_PCLKControl(SPIx_RegDef_t* pSPIx, uint8_t state);
+
+// Init-DeInit
+void SPIx_Init(SPIx_Handle_t* pSPIHandle);
+void SPIx_DeInit(SPIx_RegDef_t* pSPIx);
+
+// Data Send and Receive
+void SPI_SendData(SPIx_RegDef_t* pSPIx, uint8_t* pTxBuffer, uint32_t len);
+void SPI_ReceiveData(SPIx_RegDef_t* pSPIx, uint8_t* pRxBuffer, uint32_t len);
+
+// IRQ Configuration and ISR handling
+void SPIx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);
+void SPIx_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
+void SPIx_IRQHandling(SPIx_Handle_t *pHandle);
+
+// Other peripheral control APIs
+
+
 #endif /* INC_STM32F407XX_SPI_DRIVER_H_ */

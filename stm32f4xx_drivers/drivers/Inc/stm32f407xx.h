@@ -307,6 +307,10 @@ typedef struct {
 #define GPIOJ_REG_RESET()			do{ (RCC->AHB1RSTR |= 1 << 9);	(RCC->AHB1RSTR &= ~(1 << 9)); } while(0)
 #define GPIOK_REG_RESET()			do{ (RCC->AHB1RSTR |= 1 << 10);	(RCC->AHB1RSTR &= ~(1 << 10)); } while(0)
 
+#define SPI1_REG_RESET()			do{ (RCC->APB2RSTR |= 1 << 12);	(RCC->AHB1RSTR &= ~(1 << 12)); } while(0)
+#define SPI2_REG_RESET()			do{ (RCC->APB1RSTR |= 1 << 14);	(RCC->AHB1RSTR &= ~(1 << 14)); } while(0)
+#define SPI3_REG_RESET()			do{ (RCC->APB1RSTR |= 1 << 15);	(RCC->AHB1RSTR &= ~(1 << 15)); } while(0)
+
 /***********************************************************/
 /********************* PORT CODE FUNC **********************/
 /***********************************************************/
