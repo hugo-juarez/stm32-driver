@@ -77,6 +77,8 @@ int main(void){
 
 	SPI_SendData(SPI2, (uint8_t*)data, strlen(data));
 
+	SPI_PeripheralCtrl(SPI2, DISABLE);
+
 	for(;;);
 
 
