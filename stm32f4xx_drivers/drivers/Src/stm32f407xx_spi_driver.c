@@ -195,4 +195,12 @@ void SPI_SSIConfig(SPIx_RegDef_t* pSPIx, uint8_t state) {
 	}
 }
 
+void SPI_SSOEConfig(SPIx_RegDef_t* pSPIx, uint8_t state) {
+	if(state == ENABLE){
+		pSPIx->CR[1] |= (1 << 2);
+	}else{
+		pSPIx->CR[1] &= ~(1 << 2);
+	}
+}
+
 

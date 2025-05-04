@@ -77,6 +77,9 @@ int main(void){
 
 	SPI_SendData(SPI2, (uint8_t*)data, strlen(data));
 
+	//Check that the SPI is not busy in communication
+	while( (SPI2->SR & (1 << 7)) );
+
 	SPI_PeripheralCtrl(SPI2, DISABLE);
 
 	for(;;);
