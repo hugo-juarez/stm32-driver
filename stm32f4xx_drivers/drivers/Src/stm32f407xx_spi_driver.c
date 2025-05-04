@@ -163,6 +163,44 @@ void SPI_SendData(SPIx_RegDef_t* pSPIx, uint8_t* pTxBuffer, uint32_t len){
 
 }
 
+/**************** SPI ReceiveData ****************
+ *
+ * @fn				- SPI_ReceiveData (Blocking/Polling Call)
+ *
+ * @brief			- This function receives data of size len comming from the outside world
+ *
+ * @param[in]		- SPI base address
+ * @param[in]		- Receiving data buffer array
+ * @param[in]		- Length of data received
+ *
+ * @return			- none
+ *
+ * @note			- none
+ *
+ */
+
+void SPI_ReceiveData(SPIx_RegDef_t* pSPIx, uint8_t* pRxBuffer, uint32_t len){
+	while(len > 0){
+
+		//Check for RXNE flag - Receiver buffer is not empty
+		while( ! ( pSPIx->SR & (1 << 0) ));
+
+		//Check if 8bit or 16bit
+		if( (pSPIx->CR[0] & (1 << 11) ) ){
+			//16 bit
+			//Load data from DR into RxBuffer address
+			*((uint16_t*)pRxBuffer) = pSPIx->DR;
+			len--;
+			(uint16_t*)pRxBuffer++;
+		} else {
+			//8 bit
+			*pRxBuffer = pSPIx->DR;
+			pRxBuffer++;
+		}
+		len--;
+	}
+}
+
 /**************** SPI Peripheral Ctrl ****************
  *
  * @fn				- SPI_PeripheralCtrl
