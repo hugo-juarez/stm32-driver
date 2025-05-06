@@ -329,7 +329,122 @@ void SPIx_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority){
 	NVIC->IPR[IRQNumber] = (IRQPriority << (8 - NO_PR_BITS_IMPLEMENTED));
 }
 
+//Private Helper Function for SPI Interrupt Handle
+static void spi_txe_interrupt_handle(SPIx_Handle_t *pHandle);
+static void spi_rxne_interrupt_handle(SPIx_Handle_t *pHandle);
+static void spi_ovr_interrupt_handle(SPIx_Handle_t *pHandle);
+
 void SPIx_IRQHandling(SPIx_Handle_t *pHandle){
 
+	//Check for TXE
+	uint8_t temp1 = pHandle->pSPIx->SR & (1 << 1); //TXE Flag
+	uint8_t temp2 = pHandle->pSPIx->CR[1] & (1 << 7); //TXEIE Interrupt Enable
+
+	if(temp1 & temp2){
+		//Handle TXE
+		spi_txe_interrupt_handle(pHandle);
+	}
+
+	//Check for RXNE
+	temp1 = pHandle->pSPIx->SR & (1 << 0); //RXNE Flag
+	temp2 = pHandle->pSPIx->CR[1] & (1 << 6); //RXNEIE Interrupt Enable
+
+	if(temp1 & temp2){
+		//Handle RXNE
+		spi_rxne_interrupt_handle(pHandle);
+	}
+
+	//Check for OVR
+	temp1 = pHandle->pSPIx->SR & (1 << 6); //OVR Flag
+	temp2 = pHandle->pSPIx->CR[1] & (1 << 5); //ERROR Interrupt Enable
+
+	if(temp1 & temp2){
+		//Handle OVR
+		spi_ovr_interrupt_handle(pHandle);
+	}
 }
 
+static void spi_txe_interrupt_handle(SPIx_Handle_t *pHandle){
+
+	//Check if 8bit or 16bit
+	if( (pHandle->pSPIx->CR[0] & (1 << 11) ) ){
+		//16 bit
+		pHandle->pSPIx->DR = *((uint16_t*)pHandle->pTxBuffer);
+		pHandle->TxLen--;
+		(uint16_t*)pHandle->pTxBuffer++;
+	} else {
+		//8 bit
+		pHandle->pSPIx->DR = *pHandle->pTxBuffer;
+		pHandle->pTxBuffer++;
+	}
+	pHandle->TxLen--;
+
+	if(!pHandle->TxLen){
+		//If TXLen is 0, the we close the spi transmission and inform the application that
+		//Tx is over
+		SPI_CloseTransmission(pHandle);
+		SPI_ApplicationEventCallback(pHandle, SPI_EVENT_TX_CMPLT);
+	}
+
+
+}
+static void spi_rxne_interrupt_handle(SPIx_Handle_t *pHandle){
+
+	//Check if 8bit or 16bit
+	if( (pHandle->pSPIx->CR[0] & (1 << 11) ) ){
+		//16 bit
+		//Load data from DR into RxBuffer address
+		*((uint16_t*)pHandle->pRxBuffer) = pHandle->pSPIx->DR;
+		pHandle->RxLen--;
+		(uint16_t*)pHandle->pRxBuffer++;
+	} else {
+		//8 bit
+		*pHandle->pRxBuffer = pHandle->pSPIx->DR;
+		pHandle->pRxBuffer++;
+	}
+	pHandle->RxState--;
+
+	if(!pHandle->RxLen){
+		//If RXLen is 0, the we close the spi transmission and inform the application that
+		//Rx is over
+		SPI_CloseReception(pHandle);
+		SPI_ApplicationEventCallback(pHandle, SPI_EVENT_RX_CMPLT);
+	}
+}
+
+static void spi_ovr_interrupt_handle(SPIx_Handle_t *pHandle){
+
+	if(pHandle->TxState != SPI_BUSY_IN_TX){
+		SPI_ClearOVRFlag(pHandle);
+	}
+
+	SPI_ApplicationEventCallback(pHandle, SPI_EVENT_OVR_ERR);
+}
+
+//Callback function
+__weak void SPI_ApplicationEventCallback(SPIx_Handle_t* pHandle,uint8_t event){
+	//This is a weak implementation of a callback function that the user can use in the application
+}
+
+
+//Clear OVR Flag
+void SPI_ClearOVRFlag(SPIx_Handle_t *pHandle){
+	uint8_t temp;
+	temp = pHandle->pSPIx->DR; //Read from DR
+	temp = pHandle->pSPIx->SR; //Read from Flags
+	(void)temp;
+}
+
+//Transmision Close
+void SPI_CloseTransmission(SPIx_Handle_t *pHandle){
+	pHandle->pSPIx->CR[1] &= ~(1 << 7);
+	pHandle->pTxBuffer = NULL;
+	pHandle->TxLen = 0;
+	pHandle->TxState = SPI_READY;
+}
+void SPI_CloseReception(SPIx_Handle_t *pHandle){
+	pHandle->pSPIx->CR[1] &= ~(1 << 6); //Reset RXNEIE interrupt flag
+	pHandle->pRxBuffer = NULL;
+	pHandle->RxLen = 0;
+	pHandle->RxState = SPI_READY;
+}

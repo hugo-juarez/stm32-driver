@@ -15,6 +15,11 @@
 #define SPI_BUSY_IN_RX							1
 #define SPI_BUSY_IN_TX							2
 
+//Possible SPI application Events
+#define SPI_EVENT_TX_CMPLT						1
+#define SPI_EVENT_RX_CMPLT						2
+#define SPI_EVENT_OVR_ERR						3
+
 // Configuration Structure for SPIx peripheral
 typedef struct {
 	uint8_t SPI_DeviceMode;
@@ -108,5 +113,12 @@ void SPI_PeripheralCtrl(SPIx_RegDef_t* pSPIx, uint8_t state);
 void SPI_SSIConfig(SPIx_RegDef_t* pSPIx, uint8_t state);
 void SPI_SSOEConfig(SPIx_RegDef_t* pSPIx, uint8_t state);
 
+//Calback Function for Application
+void SPI_ApplicationEventCallback(SPIx_Handle_t* pHandle,uint8_t event);
+
+//Close SPI communcations
+void SPI_CloseTransmission(SPIx_Handle_t *pHandle);
+void SPI_CloseReception(SPIx_Handle_t *pHandle);
+void SPI_ClearOVRFlag(SPIx_Handle_t *pHandle);
 
 #endif /* INC_STM32F407XX_SPI_DRIVER_H_ */
