@@ -6,6 +6,7 @@
  */
 
 #include "stm32f407xx_spi_driver.h"
+#include <stdio.h>
 
 /**************** PCLK Control ****************
  *
@@ -220,19 +221,20 @@ uint8_t SPI_SendDataIT(SPIx_Handle_t* pSPIHandle, uint8_t* pTxBuffer, uint32_t l
 
 	uint8_t state = pSPIHandle->TxState;
 
-	if(state == SPI_BUSY_IN_TX){
-		return state;
+	if(state != SPI_BUSY_IN_TX){
+
+		//1. Save TxBuffer and Len in global vairables
+		pSPIHandle->pTxBuffer = pTxBuffer;
+		pSPIHandle->TxLen = len;
+
+		//2. Mask the SPI state as bussy in transmission so that no other code can take over same SPI peripheral
+		//until the transmision is over
+		pSPIHandle->TxState = SPI_BUSY_IN_TX;
+
+		//3. Enable TXEIE control bit to get interrupt whenever TXE flag is set in SR
+		pSPIHandle->pSPIx->CR[1] |= (1 << 7);
+
 	}
-	//1. Save TxBuffer and Len in global vairables
-	pSPIHandle->pTxBuffer = pTxBuffer;
-	pSPIHandle->TxLen = len;
-
-	//2. Mask the SPI state as bussy in transmission so that no other code can take over same SPI peripheral
-	//until the transmision is over
-	pSPIHandle->TxState = SPI_BUSY_IN_TX;
-
-	//3. Enable TXEIE control bit to get interrupt whenever TXE flag is set in SR
-	pSPIHandle->pSPIx->CR[1] |= (1 << 7);
 
 	return state;
 }
@@ -256,20 +258,19 @@ uint8_t SPI_SendDataIT(SPIx_Handle_t* pSPIHandle, uint8_t* pTxBuffer, uint32_t l
 uint8_t SPI_ReceiveDataIT(SPIx_Handle_t* pSPIHandle, uint8_t* pRxBuffer, uint32_t len){
 	uint8_t state = pSPIHandle->RxState;
 
-	if(state == SPI_BUSY_IN_RX){
-		return state;
+	if(state != SPI_BUSY_IN_RX){
+
+		//1. Save TxBuffer and Len in global vairables
+		pSPIHandle->pRxBuffer = pRxBuffer;
+		pSPIHandle->RxLen = len;
+
+		//2. Mask the SPI state as bussy in transmission so that no other code can take over same SPI peripheral
+		//until the transmision is over
+		pSPIHandle->RxState = SPI_BUSY_IN_RX;
+
+		//3. Enable TXEIE control bit to get interrupt whenever TXE flag is set in SR
+		pSPIHandle->pSPIx->CR[1] |= (1 << 6);
 	}
-	//1. Save TxBuffer and Len in global vairables
-	pSPIHandle->pRxBuffer = pRxBuffer;
-	pSPIHandle->RxLen = len;
-
-	//2. Mask the SPI state as bussy in transmission so that no other code can take over same SPI peripheral
-	//until the transmision is over
-	pSPIHandle->RxState = SPI_BUSY_IN_RX;
-
-	//3. Enable TXEIE control bit to get interrupt whenever TXE flag is set in SR
-	pSPIHandle->pSPIx->CR[1] |= (1 << 6);
-
 	return state;
 }
 
@@ -340,7 +341,7 @@ void SPIx_IRQHandling(SPIx_Handle_t *pHandle){
 	uint8_t temp1 = pHandle->pSPIx->SR & (1 << 1); //TXE Flag
 	uint8_t temp2 = pHandle->pSPIx->CR[1] & (1 << 7); //TXEIE Interrupt Enable
 
-	if(temp1 & temp2){
+	if(temp1 && temp2){
 		//Handle TXE
 		spi_txe_interrupt_handle(pHandle);
 	}
@@ -349,7 +350,7 @@ void SPIx_IRQHandling(SPIx_Handle_t *pHandle){
 	temp1 = pHandle->pSPIx->SR & (1 << 0); //RXNE Flag
 	temp2 = pHandle->pSPIx->CR[1] & (1 << 6); //RXNEIE Interrupt Enable
 
-	if(temp1 & temp2){
+	if(temp1 && temp2){
 		//Handle RXNE
 		spi_rxne_interrupt_handle(pHandle);
 	}
@@ -358,7 +359,7 @@ void SPIx_IRQHandling(SPIx_Handle_t *pHandle){
 	temp1 = pHandle->pSPIx->SR & (1 << 6); //OVR Flag
 	temp2 = pHandle->pSPIx->CR[1] & (1 << 5); //ERROR Interrupt Enable
 
-	if(temp1 & temp2){
+	if(temp1 && temp2){
 		//Handle OVR
 		spi_ovr_interrupt_handle(pHandle);
 	}
@@ -402,7 +403,7 @@ static void spi_rxne_interrupt_handle(SPIx_Handle_t *pHandle){
 		*pHandle->pRxBuffer = pHandle->pSPIx->DR;
 		pHandle->pRxBuffer++;
 	}
-	pHandle->RxState--;
+	pHandle->RxLen--;
 
 	if(!pHandle->RxLen){
 		//If RXLen is 0, the we close the spi transmission and inform the application that
