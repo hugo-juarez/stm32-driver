@@ -10,6 +10,11 @@
 
 #include "stm32f407xx.h"
 
+//SPI Application States
+#define SPI_READY								0
+#define SPI_BUSY_IN_RX							1
+#define SPI_BUSY_IN_TX							2
+
 // Configuration Structure for SPIx peripheral
 typedef struct {
 	uint8_t SPI_DeviceMode;
@@ -24,8 +29,14 @@ typedef struct {
 // Handle Struct
 
 typedef struct{
-	SPIx_RegDef_t* pSPIx;
-	SPIx_Config_t SPIConfig;
+	SPIx_RegDef_t* 	pSPIx;
+	SPIx_Config_t 	SPIConfig;
+	uint8_t*		pTxBuffer;
+	uint8_t*		pRxBuffer;
+	uint32_t		TxLen;
+	uint32_t		RxLen;
+	uint8_t			TxState;
+	uint8_t			RxState;
 }SPIx_Handle_t;
 
 // @SPI_DeviceMode
@@ -84,6 +95,8 @@ void SPIx_DeInit(SPIx_RegDef_t* pSPIx);
 // Data Send and Receive
 void SPI_SendData(SPIx_RegDef_t* pSPIx, uint8_t* pTxBuffer, uint32_t len);
 void SPI_ReceiveData(SPIx_RegDef_t* pSPIx, uint8_t* pRxBuffer, uint32_t len);
+uint8_t SPI_SendDataIT(SPIx_Handle_t* pSPIHandle, uint8_t* pTxBuffer, uint32_t len);
+uint8_t SPI_ReceiveDataIT(SPIx_Handle_t* pSPIHandle, uint8_t* pRxBuffer, uint32_t len);
 
 // IRQ Configuration and ISR handling
 void SPIx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);

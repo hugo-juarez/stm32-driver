@@ -201,6 +201,79 @@ void SPI_ReceiveData(SPIx_RegDef_t* pSPIx, uint8_t* pRxBuffer, uint32_t len){
 	}
 }
 
+/**************** SPI SendData Interrupt ****************
+ *
+ * @fn				- SPI_SendDataIT (Non-Blocking/Interrupt Call)
+ *
+ * @brief			- This function transmits data of size len into Shift register for it to be reached on the outside world
+ *
+ * @param[in]		- SPI handle address
+ * @param[in]		- Data to be transmitted
+ * @param[in]		- Number of bytes transmitted
+ *
+ * @return			- TxState
+ *
+ * @note			- none
+ *
+ */
+uint8_t SPI_SendDataIT(SPIx_Handle_t* pSPIHandle, uint8_t* pTxBuffer, uint32_t len){
+
+	uint8_t state = pSPIHandle->TxState;
+
+	if(state == SPI_BUSY_IN_TX){
+		return state;
+	}
+	//1. Save TxBuffer and Len in global vairables
+	pSPIHandle->pTxBuffer = pTxBuffer;
+	pSPIHandle->TxLen = len;
+
+	//2. Mask the SPI state as bussy in transmission so that no other code can take over same SPI peripheral
+	//until the transmision is over
+	pSPIHandle->TxState = SPI_BUSY_IN_TX;
+
+	//3. Enable TXEIE control bit to get interrupt whenever TXE flag is set in SR
+	pSPIHandle->pSPIx->CR[1] |= (1 << 7);
+
+	return state;
+}
+
+/**************** SPI ReceiveData Interrupt ****************
+ *
+ * @fn				- SPI_ReceiveDataIT (Non-Blocking/Interrupt Call)
+ *
+ * @brief			- This function receives data of size len comming from the outside world
+ *
+ * @param[in]		- SPI handle address
+ * @param[in]		- Receiving data buffer array
+ * @param[in]		- Length of data received
+ *
+ * @return			- none
+ *
+ * @note			- none
+ *
+ */
+
+uint8_t SPI_ReceiveDataIT(SPIx_Handle_t* pSPIHandle, uint8_t* pRxBuffer, uint32_t len){
+	uint8_t state = pSPIHandle->RxState;
+
+	if(state == SPI_BUSY_IN_RX){
+		return state;
+	}
+	//1. Save TxBuffer and Len in global vairables
+	pSPIHandle->pRxBuffer = pRxBuffer;
+	pSPIHandle->RxLen = len;
+
+	//2. Mask the SPI state as bussy in transmission so that no other code can take over same SPI peripheral
+	//until the transmision is over
+	pSPIHandle->RxState = SPI_BUSY_IN_RX;
+
+	//3. Enable TXEIE control bit to get interrupt whenever TXE flag is set in SR
+	pSPIHandle->pSPIx->CR[1] |= (1 << 6);
+
+	return state;
+}
+
+
 /**************** SPI Peripheral Ctrl ****************
  *
  * @fn				- SPI_PeripheralCtrl
@@ -256,4 +329,7 @@ void SPIx_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority){
 	NVIC->IPR[IRQNumber] = (IRQPriority << (8 - NO_PR_BITS_IMPLEMENTED));
 }
 
+void SPIx_IRQHandling(SPIx_Handle_t *pHandle){
+
+}
 
