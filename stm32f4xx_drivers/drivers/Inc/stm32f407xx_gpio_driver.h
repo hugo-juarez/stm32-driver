@@ -93,7 +93,7 @@ void GPIOx_TogglePin(GPIOx_RegDef_t* pGPIOx, uint8_t pin);
 
 // Interrupt
 void GPIOx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);
-
+void GPIOx_IRQPriorityConfig(uint8_t IRQNumber, uint8_t IRQPriority);
 void GPIOx_IRQHandling(uint8_t pin);
 
 

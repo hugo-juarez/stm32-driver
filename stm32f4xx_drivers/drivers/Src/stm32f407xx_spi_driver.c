@@ -241,4 +241,19 @@ void SPI_SSOEConfig(SPIx_RegDef_t* pSPIx, uint8_t state) {
 	}
 }
 
+void SPIx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state){
+	uint8_t temp1 = IRQNumber / 32;
+	uint8_t temp2 = IRQNumber % 32;
+
+	if(state == ENABLE){
+		NVIC->ISER[temp1] |= (1 << temp2);
+	} else {
+		NVIC->ICER[temp1] |= (1 << temp2);
+	}
+}
+
+void SPIx_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority){
+	NVIC->IPR[IRQNumber] = (IRQPriority << (8 - NO_PR_BITS_IMPLEMENTED));
+}
+
 

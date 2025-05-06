@@ -22,6 +22,7 @@
 //Arguments
 #define LED_PIN						9
 #define LED_ON						1
+#define SENSOR_PIN					1
 
 //Initializations
 void SPI2_GPIOInit(void);
@@ -29,7 +30,9 @@ void SPI2_Inits(void);
 void GPIO_BtnConfig(void);
 
 //SPI API
+uint8_t SPI_SendCommand(uint8_t command_code);
 uint8_t SPI_VerifyResponse(uint8_t ack_byte);
+void delay(void);
 
 uint8_t btn_is_pressed = 0;
 
@@ -51,8 +54,13 @@ int main(void){
 	SPI_SSOEConfig(SPI2, ENABLE);
 
 	for(;;){
-		if(!btn_is_pressed)
-			continue;
+
+		//********* 1. COMMMAND_LED_CTRL ***************
+
+		while(!btn_is_pressed);
+
+		//Reset Flag
+		btn_is_pressed = 0;
 
 		//Enable SPI
 		SPI_PeripheralCtrl(SPI2, ENABLE);
@@ -60,14 +68,10 @@ int main(void){
 		//1. CMD_LED_CTRL <pin no(1)> <value>
 		uint8_t command_code = COMMAND_LED_CTRL;
 		uint8_t args[2];
-		uint8_t ack_byte;
-		SPI_SendData(SPI2, &command_code, 1);
-		//To clear RXNE
-		SPI_ReceiveData(SPI2, &dummy_read, 1);
+		uint8_t ack_byte = NACK;
 
-		//Fetching Response from Slave
-		SPI_SendData(SPI2, &dummy_write, 1);
-		SPI_ReceiveData(SPI2, &ack_byte, 1);
+		//Send Command
+		ack_byte = SPI_SendCommand(command_code);
 
 		if (SPI_VerifyResponse(ack_byte)){
 			//If ACK send arguments
@@ -84,7 +88,50 @@ int main(void){
 		//Disable SPI
 		SPI_PeripheralCtrl(SPI2, DISABLE);
 
+		//********* 2. COMMAND_SENSOR_READ ***************
+
+		while(!btn_is_pressed);
+
+		//Reset Flag
 		btn_is_pressed = 0;
+
+		//Enable SPI
+		SPI_PeripheralCtrl(SPI2, ENABLE);
+
+		//1. COMMAND_SENSOR_READ <pin no(1)>
+		command_code = COMMAND_SENSOR_READ;
+		ack_byte = NACK;
+
+		//Send Command
+		ack_byte = SPI_SendCommand(command_code);
+
+		if (SPI_VerifyResponse(ack_byte)){
+
+			args[0] = SENSOR_PIN;
+			SPI_SendData(SPI2, args, 1);
+
+			//Clear RXNE
+			SPI_ReceiveData(SPI2, &dummy_read, 1);
+
+			//Give time for slave to fetch sensor info
+			delay();
+
+			uint8_t analog_read;
+
+			//Fetch sensor info
+			SPI_SendData(SPI2, &dummy_write, 1);
+			SPI_ReceiveData(SPI2, &analog_read, 1);
+
+		}
+
+
+		//Wait for SPI is not busy in communication
+		while( (SPI2->SR & (1 << 7)) );
+
+		//Disable SPI
+		SPI_PeripheralCtrl(SPI2, DISABLE);
+
+
 
 	}
 
@@ -163,6 +210,24 @@ void GPIO_BtnConfig(void){
 	//Enable Interrupt in NVIC
 	GPIOx_IRQInterruptConfig(IRQ_NO_EXTI0, ENABLE);
 
+}
+
+uint8_t SPI_SendCommand(uint8_t command_code){
+	uint8_t dummy;
+	uint8_t ack_byte;
+
+	//Send Command Code
+	SPI_SendData(SPI2, &command_code, 1);
+	//To clear RXNE
+	SPI_ReceiveData(SPI2, &dummy, 1);
+
+	dummy = 0xff; //Avoid accidentaly sending code
+
+	//Fetching Response from Slave
+	SPI_SendData(SPI2, &dummy, 1);
+	SPI_ReceiveData(SPI2, &ack_byte, 1);
+
+	return ack_byte;
 }
 
 uint8_t SPI_VerifyResponse(uint8_t ack_byte){
