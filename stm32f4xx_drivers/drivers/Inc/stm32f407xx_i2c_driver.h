@@ -58,7 +58,7 @@ void I2Cx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);
 void I2Cx_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
 
 // Other peripheral control APIs
-void I2C_PeripheralCtrl(I2Cx_RegDef_t* pSPIx, uint8_t state);
+void I2C_PeripheralCtrl(I2Cx_RegDef_t* pI2Cx, uint8_t state);
 
 //Calback Function for Application
 void I2C_ApplicationEventCallback(I2Cx_Handle_t* pHandle,uint8_t event);
