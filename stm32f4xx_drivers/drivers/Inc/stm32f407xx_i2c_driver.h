@@ -47,7 +47,7 @@ typedef struct{
 void I2Cx_PCLKControl(I2Cx_RegDef_t* pI2Cx, uint8_t state);
 
 // Init-DeInit
-void I2Cx_Init(I2Cx_Handle_t* pSPIHandle);
+void I2Cx_Init(I2Cx_Handle_t* pI2CHandle);
 void I2Cx_DeInit(I2Cx_RegDef_t* pI2Cx);
 
 // Data Send and Receive
