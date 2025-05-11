@@ -39,6 +39,18 @@ typedef struct{
 #define I2C_FM_DUTY_2				0
 #define I2C_FM_DUTY_16_9			1
 
+//FLAGS
+#define I2C_FLAG_SB					(1 << I2C_SR1_SB)
+#define I2C_FLAG_BTF				(1 << I2C_SR1_BTF)
+#define I2C_FLAG_TXE				(1 << I2C_SR1_TXE)
+#define I2C_FLAG_RNXE				(1 << I2C_SR1_RXNE)
+#define I2C_FLAG_ADDR				(1 << I2C_SR1_ADDR)
+#define I2C_FLAG_BERR				(1 << I2C_SR1_BERR)
+#define I2C_FLAG_ARLO				(1 << I2C_SR1_ARLO)
+#define I2C_FLAG_AF					(1 << I2C_SR1_AF)
+#define I2C_FLAG_OVR				(1 << I2C_SR1_OVR)
+#define I2C_FLAG_TIMEOUT			(1 << I2C_SR1_TIMEOUT)
+
 /*****************************************************************
  * 							APIs!!!!!!
  *****************************************************************/
@@ -51,7 +63,7 @@ void I2Cx_Init(I2Cx_Handle_t* pI2CHandle);
 void I2Cx_DeInit(I2Cx_RegDef_t* pI2Cx);
 
 // Data Send and Receive
-
+void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr);
 
 // IRQ Configuration and ISR handling
 void I2Cx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);

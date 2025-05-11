@@ -135,6 +135,68 @@ void I2Cx_DeInit(I2Cx_RegDef_t* pI2Cx){
 	}
 }
 
+//DATA READ AND WRITE PRIVATE FUNCTION
+
+static void I2C_GenerateStartCondition(I2Cx_RegDef_t* pI2C){
+	pI2C->CR1 |= (1 << I2C_CR1_START);
+}
+
+static void I2C_GenerateStopCondition(I2Cx_RegDef_t* pI2C){
+	pI2C->CR1 |= (1 << I2C_CR1_STOP);
+}
+
+static void I2C_ExecuteAddressPhase(I2Cx_RegDef_t* pI2C, uint8_t slaveAddr){
+	slaveAddr = slaveAddr << 1;
+	slaveAddr &= ~(1 << 0);
+	pI2C->DR = slaveAddr;
+}
+
+static void I2C_ClearADDRFlag(I2Cx_RegDef_t* pI2C){
+	uint32_t dummyRead;
+	//Read SR1
+	dummyRead = pI2C->SR1;
+	//Read SR2
+	dummyRead = pI2C->SR2;
+
+	(void) dummyRead;
+}
+
+
+// Data Send and Receive
+void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr){
+	//Generate START condition
+	I2C_GenerateStartCondition(pI2CHandle->pI2C);
+
+	//Confirm Start generation is complete
+	while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_SB));
+
+	//SendAddress o the slave with r/nw bit set to w(0)
+	I2C_ExecuteAddressPhase(pI2CHandle->pI2C, slaveAddr);
+
+	//Confirm address phase is completed so checking ADDR flag in SR1
+	while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_ADDR));
+
+	//Clear ADDR flag
+	I2C_ClearADDRFlag(pI2CHandle->pI2C);
+
+	//Send data until len becomes 0:
+	while(len > 0){
+		while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_TXE)); //Wait till TxE flag is set emaning the buffer is empty
+		pI2CHandle->pI2C->DR = *pTxBuffer;
+		pTxBuffer++;
+		len--;
+	}
+
+	//When Len is 0 wait for TXE=1 and BTF=1 meanst that next transmission can start
+	while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_TXE));
+	while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_BTF));
+
+	//Generate STOP condition
+	I2C_GenerateStopCondition(pI2CHandle->pI2C);
+
+}
+
+
 // IRQ Configuration and ISR handling
 void I2Cx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state){
 	uint8_t temp1 = IRQNumber / 32;
