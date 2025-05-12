@@ -123,6 +123,16 @@ void I2Cx_Init(I2Cx_Handle_t* pI2CHandle){
 	pI2CHandle->pI2C->CCR = tempreg;
 
 	//Configure TRISE
+	if(pI2CHandle->I2C_Config.I2C_SCLSpeed <= I2C_SCL_SPEED_SM){
+		//Standard Mode
+		tempreg = ( (pclk*1000)/1000000000U ) + 1;
+	} else{
+		//Fast Mode
+		tempreg = ( (pclk*300)/1000000000U ) + 1;
+	}
+
+	pI2CHandle->pI2C->TRISE = (tempreg & 0x3F);
+
 }
 
 void I2Cx_DeInit(I2Cx_RegDef_t* pI2Cx){
