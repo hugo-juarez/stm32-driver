@@ -201,14 +201,8 @@ void GPIO_BtnConfig(void){
 	UserBtn.GPIOx_PinConfig.GPIOx_PinSpeed = GPIOx_OSPEED_FAST;
 	UserBtn.GPIOx_PinConfig.GPIOx_PinAltFunMode = 0;
 
-	//Enable GPIOB Peripheral
-	GPIOx_PCLKControl(GPIOA, ENABLE);
-
 	//Initialize BTN interrupt
 	GPIOx_Init(&UserBtn);
-
-	//Enable Interrupt in NVIC
-	GPIOx_IRQInterruptConfig(IRQ_NO_EXTI0, ENABLE);
 
 }
 

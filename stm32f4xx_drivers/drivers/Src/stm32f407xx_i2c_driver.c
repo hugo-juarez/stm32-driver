@@ -82,6 +82,9 @@ void I2Cx_PCLKControl(I2Cx_RegDef_t* pI2Cx, uint8_t state){
 //Init and Deinit
 
 void I2Cx_Init(I2Cx_Handle_t* pI2CHandle){
+
+	I2Cx_PCLKControl(pI2CHandle->pI2C, ENABLE);
+
 	uint32_t tempreg = 0;
 	uint32_t pclk = 0;
 
@@ -174,6 +177,7 @@ static void I2C_ClearADDRFlag(I2Cx_RegDef_t* pI2C){
 
 // Data Send and Receive
 void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr){
+
 	//Generate START condition
 	I2C_GenerateStartCondition(pI2CHandle->pI2C);
 
@@ -205,7 +209,14 @@ void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t 
 	I2C_GenerateStopCondition(pI2CHandle->pI2C);
 
 }
-
+//Peripheral Control
+void I2C_PeripheralCtrl(I2Cx_RegDef_t* pI2Cx, uint8_t state){
+	if(state == ENABLE){
+		pI2Cx->CR1 |= (1 << I2C_CR1_PE);
+	}else{
+		pI2Cx->CR1 &= ~(1 << I2C_CR1_PE);
+	}
+}
 
 // IRQ Configuration and ISR handling
 void I2Cx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state){
@@ -220,14 +231,4 @@ void I2Cx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state){
 }
 void I2Cx_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority){
 	NVIC->IPR[IRQNumber] = (IRQPriority << (8 - NO_PR_BITS_IMPLEMENTED));
-}
-
-// Other peripheral control APIs
-void I2C_PeripheralCtrl(I2Cx_RegDef_t* pI2Cx, uint8_t state){
-	if(state == ENABLE){
-		pI2Cx->CR1 |= (1 << I2C_CR1_PE);
-	} else{
-		pI2Cx->CR1 &= ~(1 << I2C_CR1_PE); //Reset to 0
-	}
-
 }
