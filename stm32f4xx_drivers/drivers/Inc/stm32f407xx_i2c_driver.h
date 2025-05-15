@@ -55,6 +55,10 @@ typedef struct{
 #define WRITE						0
 #define READ						1
 
+//Repeated Start
+#define I2C_ENABLE_RS				0
+#define I2C_DISABLE_RS				1
+
 /*****************************************************************
  * 							APIs!!!!!!
  *****************************************************************/
@@ -67,8 +71,8 @@ void I2Cx_Init(I2Cx_Handle_t* pI2CHandle);
 void I2Cx_DeInit(I2Cx_RegDef_t* pI2Cx);
 
 // Data Send and Receive
-void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr);
-void I2C_MasterReceiveData(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32_t len, uint8_t slaveAddr);
+void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart);
+void I2C_MasterReceiveData(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart);
 
 // IRQ Configuration and ISR handling
 void I2Cx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);

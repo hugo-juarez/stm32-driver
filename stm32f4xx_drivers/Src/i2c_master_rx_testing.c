@@ -113,14 +113,16 @@ int main(void){
 
 		//Send First Command to get Length Info
 		uint8_t command = 0x51;
-		I2C_MasterSendData(&I2C1_Handle, &command, 1, SLAVE_ADDR);
+		I2C_MasterSendData(&I2C1_Handle, &command, 1, SLAVE_ADDR, I2C_ENABLE_RS);
 		uint8_t len = 0;
-		I2C_MasterReceiveData(&I2C1_Handle, &len, 1, SLAVE_ADDR);
+		I2C_MasterReceiveData(&I2C1_Handle, &len, 1, SLAVE_ADDR, I2C_ENABLE_RS);
 
 		//Send Second Command to read Info
 		command = 0x52;
-		I2C_MasterSendData(&I2C1_Handle, &command, 1, SLAVE_ADDR);
-		I2C_MasterReceiveData(&I2C1_Handle, readBuffer, len, SLAVE_ADDR);
+		I2C_MasterSendData(&I2C1_Handle, &command, 1, SLAVE_ADDR, I2C_ENABLE_RS);
+		I2C_MasterReceiveData(&I2C1_Handle, readBuffer, len, SLAVE_ADDR, I2C_DISABLE_RS);
+
+		readBuffer[len+1] = '\0';
 
 		printf("Data Received: %s\n", readBuffer);
 
