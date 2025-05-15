@@ -158,9 +158,21 @@ static void I2C_GenerateStopCondition(I2Cx_RegDef_t* pI2C){
 	pI2C->CR1 |= (1 << I2C_CR1_STOP);
 }
 
-static void I2C_ExecuteAddressPhase(I2Cx_RegDef_t* pI2C, uint8_t slaveAddr){
+static void I2C_SetACK(I2Cx_RegDef_t* pI2C, uint8_t status){
+	if(status == ENABLE){
+		pI2C->CR1 |= (1 << I2C_CR1_ACK);
+	}else{
+		pI2C->CR1 &= ~(1 << I2C_CR1_ACK);
+	}
+}
+
+static void I2C_ExecuteAddressPhase(I2Cx_RegDef_t* pI2C, uint8_t slaveAddr, uint8_t mode){
 	slaveAddr = slaveAddr << 1;
-	slaveAddr &= ~(1 << 0);
+	if(mode == READ){
+		slaveAddr |= (1 << 0);
+	}else{
+		slaveAddr &= ~(1 << 0);
+	}
 	pI2C->DR = slaveAddr;
 }
 
@@ -185,7 +197,7 @@ void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t 
 	while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_SB));
 
 	//SendAddress o the slave with r/nw bit set to w(0)
-	I2C_ExecuteAddressPhase(pI2CHandle->pI2C, slaveAddr);
+	I2C_ExecuteAddressPhase(pI2CHandle->pI2C, slaveAddr, WRITE);
 
 	//Confirm address phase is completed so checking ADDR flag in SR1
 	while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_ADDR));
@@ -209,6 +221,65 @@ void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t 
 	I2C_GenerateStopCondition(pI2CHandle->pI2C);
 
 }
+
+void I2C_MasterReceiveData(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32_t len, uint8_t slaveAddr){
+	//Generate STARt Condition
+	I2C_GenerateStartCondition(pI2CHandle->pI2C);
+
+	//Confirm Start generation is complete
+	while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_SB));
+
+	//SendAddress o the slave with r/nw bit set to r(1)
+	I2C_ExecuteAddressPhase(pI2CHandle->pI2C, slaveAddr, WRITE);
+
+	//Confirm address phase is completed so checking ADDR flag in SR1
+	while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_ADDR));
+
+	if(len == 1){
+		//Disable ACK send no response
+		I2C_SetACK(pI2CHandle->pI2C, DISABLE);
+
+		//Clear ADDR flag
+		I2C_ClearADDRFlag(pI2CHandle->pI2C);
+
+		//Wait for RXNE=1 Data is in buffer.
+		while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_RXNE));
+
+		//Generate STOP condition
+		I2C_GenerateStopCondition(pI2CHandle->pI2C);
+
+		//Read data
+		*pRxBuffer = (uint8_t) (pI2CHandle->pI2C->DR & 0xFF);
+	} else{
+		//Clear ADDR flag
+		I2C_ClearADDRFlag(pI2CHandle->pI2C);
+
+		while(len > 0){
+			//Wait for RXNE=1 Data is in buffer.
+			while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_RXNE));
+
+			if(len == 2){
+				//Disable ACK send no response
+				I2C_SetACK(pI2CHandle->pI2C, DISABLE);
+
+				//Generate STOP condition
+				I2C_GenerateStopCondition(pI2CHandle->pI2C);
+
+			}
+
+			//Read data
+			*pRxBuffer = (uint8_t) (pI2CHandle->pI2C->DR & 0xFF);
+			pRxBuffer++;
+			len--;
+		}
+	}
+
+	//Re-enable ACK
+	I2C_SetACK(pI2CHandle->pI2C, ENABLE);
+
+
+}
+
 //Peripheral Control
 void I2C_PeripheralCtrl(I2Cx_RegDef_t* pI2Cx, uint8_t state){
 	if(state == ENABLE){
