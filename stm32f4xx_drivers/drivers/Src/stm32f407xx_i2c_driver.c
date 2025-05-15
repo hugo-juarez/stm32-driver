@@ -230,7 +230,7 @@ void I2C_MasterReceiveData(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32
 	while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_SB));
 
 	//SendAddress o the slave with r/nw bit set to r(1)
-	I2C_ExecuteAddressPhase(pI2CHandle->pI2C, slaveAddr, WRITE);
+	I2C_ExecuteAddressPhase(pI2CHandle->pI2C, slaveAddr, READ);
 
 	//Confirm address phase is completed so checking ADDR flag in SR1
 	while(!(pI2CHandle->pI2C->SR1 & I2C_FLAG_ADDR));
@@ -250,6 +250,7 @@ void I2C_MasterReceiveData(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32
 
 		//Read data
 		*pRxBuffer = (uint8_t) (pI2CHandle->pI2C->DR & 0xFF);
+
 	} else{
 		//Clear ADDR flag
 		I2C_ClearADDRFlag(pI2CHandle->pI2C);
