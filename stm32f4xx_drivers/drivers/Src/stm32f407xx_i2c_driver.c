@@ -310,3 +310,74 @@ void I2Cx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state){
 void I2Cx_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority){
 	NVIC->IPR[IRQNumber] = (IRQPriority << (8 - NO_PR_BITS_IMPLEMENTED));
 }
+
+/*
+ *  Data Send and Receive
+ *  With INTERRUPTS
+ */
+
+uint8_t I2C_MasterSendDataIT(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart){
+
+	uint8_t busystate = pI2CHandle->TxRxState;
+
+	if( (busystate == I2C_BUSY_IN_TX) || (busystate == I2C_BUSY_IN_RX) ){
+		return busystate;
+	}
+
+	pI2CHandle->TxRxState = I2C_BUSY_IN_TX;
+	pI2CHandle->pTxBuffer = pTxBuffer;
+	pI2CHandle->TxLen = len;
+	pI2CHandle->DevAddr = slaveAddr;
+	pI2CHandle->RS = repeatedStart;
+
+	//Generate START Condition
+	I2C_GenerateStartCondition(pI2CHandle->pI2C);
+
+	//Enable Buffer interrupt ITBUFEN
+	pI2CHandle->pI2C->CR2 |= (1 << I2C_CR2_ITBUFEN);
+
+	//Enable Event interrupt ITEVTEN
+	pI2CHandle->pI2C->CR2 |= (1 << I2C_CR2_ITEVTEN);
+
+	//Enable Error interrupt ITERREN
+	pI2CHandle->pI2C->CR2 |= (1 << I2C_CR2_ITERREN);
+
+
+	return busystate;
+}
+
+uint8_t I2C_MasterReceiveDataIT(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart){
+
+	uint8_t busystate = pI2CHandle->TxRxState;
+
+	if( (busystate == I2C_BUSY_IN_TX) || (busystate == I2C_BUSY_IN_RX) ){
+		return busystate;
+	}
+
+	pI2CHandle->TxRxState = I2C_BUSY_IN_RX;
+	pI2CHandle->pRxBuffer = pRxBuffer;
+	pI2CHandle->RxLen = len;
+	pI2CHandle->RxSize = len;
+	pI2CHandle->DevAddr = slaveAddr;
+	pI2CHandle->RS = repeatedStart;
+
+	//Generate START Condition
+	I2C_GenerateStartCondition(pI2CHandle->pI2C);
+
+	//Enable Buffer interrupt ITBUFEN
+	pI2CHandle->pI2C->CR2 |= (1 << I2C_CR2_ITBUFEN);
+
+	//Enable Event interrupt ITEVTEN
+	pI2CHandle->pI2C->CR2 |= (1 << I2C_CR2_ITEVTEN);
+
+	//Enable Error interrupt ITERREN
+	pI2CHandle->pI2C->CR2 |= (1 << I2C_CR2_ITERREN);
+
+	return busystate;
+
+}
+
+
+
+
+
