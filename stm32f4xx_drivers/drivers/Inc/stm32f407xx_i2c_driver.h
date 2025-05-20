@@ -78,11 +78,11 @@ typedef struct{
  *****************************************************************/
 
 // PCLK Control
-void I2Cx_PCLKControl(I2Cx_RegDef_t* pI2Cx, uint8_t state);
+void I2C_PCLKControl(I2Cx_RegDef_t* pI2Cx, uint8_t state);
 
 // Init-DeInit
-void I2Cx_Init(I2Cx_Handle_t* pI2CHandle);
-void I2Cx_DeInit(I2Cx_RegDef_t* pI2Cx);
+void I2C_Init(I2Cx_Handle_t* pI2CHandle);
+void I2C_DeInit(I2Cx_RegDef_t* pI2Cx);
 
 // Data Send and Receive
 void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart);
@@ -93,8 +93,9 @@ uint8_t I2C_MasterSendDataIT(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint
 uint8_t I2C_MasterReceiveDataIT(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart);
 
 // IRQ Configuration and ISR handling
-void I2Cx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);
-void I2Cx_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
+void I2C_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);
+void I2C_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
+void I2C_EV_IRQHandling(I2Cx_Handle_t* pI2CHandle);
 
 // Other peripheral control APIs
 void I2C_PeripheralCtrl(I2Cx_RegDef_t* pI2Cx, uint8_t state);

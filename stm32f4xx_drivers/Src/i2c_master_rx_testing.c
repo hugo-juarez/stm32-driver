@@ -58,7 +58,7 @@ void I2C1_Inits(void){
 	I2C1_Handle.I2C_Config.I2C_FMDutyCycle = I2C_FM_DUTY_2;
 	I2C1_Handle.I2C_Config.I2C_SCLSpeed = I2C_SCL_SPEED_SM;
 
-	I2Cx_Init(&I2C1_Handle);
+	I2C_Init(&I2C1_Handle);
 
 }
 
