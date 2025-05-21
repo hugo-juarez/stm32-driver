@@ -555,6 +555,90 @@ void I2C_EV_IRQHandling(I2Cx_Handle_t* pI2CHandle){
 
 void I2C_ER_IRQHandling(I2Cx_Handle_t* pI2CHandle){
 
+	uint32_t temp1, temp2;
+
+	temp2 = (pI2CHandle->pI2C->CR2) & (1 << I2C_CR2_ITERREN);
+
+	/*********************************************************
+	 * 						BUS ERROR
+	 *********************************************************/
+
+	temp1 = (pI2CHandle->pI2C->SR1) & (1 << I2C_SR1_BERR);
+
+	if(temp1 && temp2){
+
+		//Clear bus error
+		pI2CHandle->pI2C->SR1 &= ~(1 << I2C_SR1_BERR);
+
+		//Notify application
+		I2C_ApplicationEventCallback(pI2CHandle, I2C_ER_BERR);
+
+	}
+
+	/*********************************************************
+	 * 				ARBITRATION LOST ERROR
+	 *********************************************************/
+
+	temp1 = (pI2CHandle->pI2C->SR1) & (1 << I2C_SR1_ARLO);
+
+	if(temp1 && temp2){
+
+		//Clear error
+		pI2CHandle->pI2C->SR1 &= ~(1 << I2C_SR1_ARLO);
+
+		//Notify
+		I2C_ApplicationEventCallback(pI2CHandle, I2C_ER_ARLO);
+
+	}
+
+	/*********************************************************
+	 *	 				ACK FAILURE ERROR
+	 *********************************************************/
+
+	temp1 = (pI2CHandle->pI2C->SR1) & (1 << I2C_SR1_AF);
+
+	if(temp1 && temp2){
+
+		//Clear error
+		pI2CHandle->pI2C->SR1 &= ~(1 << I2C_SR1_AF);
+
+		//Notify
+		I2C_ApplicationEventCallback(pI2CHandle, I2C_ER_AF);
+
+	}
+
+	/*********************************************************
+	 *	 				OVER/UNDER-RUN ERROR
+	 *********************************************************/
+
+	temp1 = (pI2CHandle->pI2C->SR1) & (1 << I2C_SR1_OVR);
+
+	if(temp1 && temp2){
+
+		//Clear error
+		pI2CHandle->pI2C->SR1 &= ~(1 << I2C_SR1_OVR);
+
+		//Notify
+		I2C_ApplicationEventCallback(pI2CHandle, I2C_ER_OVR);
+
+	}
+
+	/*********************************************************
+	 *	 				TIMEOUT ERROR
+	 *********************************************************/
+
+	temp1 = (pI2CHandle->pI2C->SR1) & (1 << I2C_SR1_TIMEOUT);
+
+	if(temp1 && temp2){
+
+		//Clear error
+		pI2CHandle->pI2C->SR1 &= ~(1 << I2C_SR1_TIMEOUT);
+
+		//Notify
+		I2C_ApplicationEventCallback(pI2CHandle, I2C_ER_TIMEOUT);
+
+	}
+
 }
 
 void I2C_CloseSendData(I2Cx_Handle_t *pI2CHandle){
