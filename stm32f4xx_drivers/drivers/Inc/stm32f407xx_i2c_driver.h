@@ -105,6 +105,7 @@ uint8_t I2C_MasterSendDataIT(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint
 uint8_t I2C_MasterReceiveDataIT(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart);
 void I2C_CloseSendData(I2Cx_Handle_t *pI2CHandle);
 void I2C_CloseReceiveData(I2Cx_Handle_t *pI2CHandle);
+void I2C_GenerateStopCondition(I2Cx_RegDef_t* pI2C);
 
 // IRQ Configuration and ISR handling
 void I2C_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);

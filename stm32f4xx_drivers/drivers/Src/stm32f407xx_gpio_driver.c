@@ -339,9 +339,9 @@ void GPIOx_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state){
 	uint8_t temp2 = IRQNumber % 32;
 
 	if(state == ENABLE){
-		NVIC->ISER[temp1] |= (1 << temp2);
+		NVIC->ISER[temp1] = (1 << temp2);
 	} else {
-		NVIC->ICER[temp1] |= (1 << temp2);
+		NVIC->ICER[temp1] = (1 << temp2);
 	}
 }
 
