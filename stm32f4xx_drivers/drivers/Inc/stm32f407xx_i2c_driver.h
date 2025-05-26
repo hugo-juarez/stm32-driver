@@ -100,6 +100,7 @@ void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t 
 void I2C_MasterReceiveData(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart);
 void I2C_SlaveSendData(I2Cx_RegDef_t* pI2C, uint8_t data);
 uint8_t I2C_SlaveReceiveData(I2Cx_RegDef_t* pI2C);
+void I2C_SlaveCallbackEvents(I2Cx_RegDef_t* pI2C, uint8_t event);
 
 // Data Send and Receive IT
 uint8_t I2C_MasterSendDataIT(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart);

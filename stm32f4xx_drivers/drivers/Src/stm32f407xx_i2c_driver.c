@@ -259,6 +259,9 @@ static void I2C_MasterHandleRXNEInterrupt(I2Cx_Handle_t* pI2CHandle){
 	}
 }
 
+/************************************************************************************
+ * 							MASTER SEND/RECEIVE DATA
+ ************************************************************************************/
 
 // Data Send and Receive
 void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr, uint8_t repeatedStart){
@@ -371,8 +374,24 @@ uint8_t I2C_SlaveReceiveData(I2Cx_RegDef_t* pI2C){
 	return pI2C->DR;
 }
 
+void I2C_SlaveCallbackEvents(I2Cx_RegDef_t* pI2C, uint8_t event){
+	if(event == ENABLE){
+		pI2C->CR2 |= (1 << I2C_CR2_ITEVTEN);
+		pI2C->CR2 |= (1 << I2C_CR2_ITBUFEN);
+		pI2C->CR2 |= (1 << I2C_CR2_ITERREN);
+	}else {
+		pI2C->CR2 &= ~(1 << I2C_CR2_ITEVTEN);
+		pI2C->CR2 &= ~(1 << I2C_CR2_ITBUFEN);
+		pI2C->CR2 &= ~(1 << I2C_CR2_ITERREN);
+	}
+}
 
-//Peripheral Control
+
+
+/************************************************************************************
+ * 							PERIPEHRAL CTRL
+ ************************************************************************************/
+
 void I2C_PeripheralCtrl(I2Cx_RegDef_t* pI2Cx, uint8_t state){
 	if(state == ENABLE){
 		pI2Cx->CR1 |= (1 << I2C_CR1_PE);
@@ -381,7 +400,10 @@ void I2C_PeripheralCtrl(I2Cx_RegDef_t* pI2Cx, uint8_t state){
 	}
 }
 
-// IRQ Configuration and ISR handling
+/************************************************************************************
+ * 							IRQ CONFIG/PRIO
+ ************************************************************************************/
+
 void I2C_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state){
 	uint8_t temp1 = IRQNumber / 32;
 	uint8_t temp2 = IRQNumber % 32;
