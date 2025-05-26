@@ -158,7 +158,7 @@ void I2C_GenerateStopCondition(I2Cx_RegDef_t* pI2C){
 	pI2C->CR1 |= (1 << I2C_CR1_STOP);
 }
 
-static void I2C_SetACK(I2Cx_RegDef_t* pI2C, uint8_t status){
+void I2C_SetACK(I2Cx_RegDef_t* pI2C, uint8_t status){
 	if(status == ENABLE){
 		pI2C->CR1 |= (1 << I2C_CR1_ACK);
 	}else{

@@ -117,6 +117,7 @@ void I2C_ER_IRQHandling(I2Cx_Handle_t* pI2CHandle);
 
 // Other peripheral control APIs
 void I2C_PeripheralCtrl(I2Cx_RegDef_t* pI2Cx, uint8_t state);
+void I2C_SetACK(I2Cx_RegDef_t* pI2C, uint8_t status);
 
 //Calback Function for Application
 void I2C_ApplicationEventCallback(I2Cx_Handle_t* pHandle,uint8_t event);
