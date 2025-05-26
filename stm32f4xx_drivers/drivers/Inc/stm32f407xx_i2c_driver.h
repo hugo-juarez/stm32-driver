@@ -76,14 +76,13 @@ typedef struct{
 #define I2C_EV_STOP					0
 #define I2C_EV_TX_CMPLT				1
 #define I2C_EV_RX_CMPLT				2
-
-//I2C Error Events
 #define I2C_ER_BERR					3
 #define I2C_ER_ARLO					4
 #define I2C_ER_AF					5
 #define I2C_ER_OVR					6
 #define I2C_ER_TIMEOUT				7
-
+#define I2C_EV_DATA_REQ				8
+#define I2C_EV_DATA_RCV				9
 
 /*****************************************************************
  * 							APIs!!!!!!
@@ -99,6 +98,8 @@ void I2C_DeInit(I2Cx_RegDef_t* pI2Cx);
 // Data Send and Receive
 void I2C_MasterSendData(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart);
 void I2C_MasterReceiveData(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart);
+void I2C_SlaveSendData(I2Cx_RegDef_t* pI2C, uint8_t data);
+uint8_t I2C_SlaveReceiveData(I2Cx_RegDef_t* pI2C);
 
 // Data Send and Receive IT
 uint8_t I2C_MasterSendDataIT(I2Cx_Handle_t* pI2CHandle, uint8_t* pTxBuffer, uint32_t len, uint8_t slaveAddr,  uint8_t repeatedStart);

@@ -360,6 +360,18 @@ void I2C_MasterReceiveData(I2Cx_Handle_t* pI2CHandle, uint8_t* pRxBuffer, uint32
 
 }
 
+/************************************************************************************
+ * 							SLAVE SEND/RECEIVE DATA
+ ************************************************************************************/
+
+void I2C_SlaveSendData(I2Cx_RegDef_t* pI2C, uint8_t data){
+	pI2C->DR = data;
+}
+uint8_t I2C_SlaveReceiveData(I2Cx_RegDef_t* pI2C){
+	return pI2C->DR;
+}
+
+
 //Peripheral Control
 void I2C_PeripheralCtrl(I2Cx_RegDef_t* pI2Cx, uint8_t state){
 	if(state == ENABLE){
@@ -536,6 +548,11 @@ void I2C_EV_IRQHandling(I2Cx_Handle_t* pI2CHandle){
 
 			I2C_MasterHandleRXNEInterrupt(pI2CHandle);
 
+		} else {
+			//Check master is on write mode
+			if( !(pI2CHandle->pI2C->SR2 & (1 << I2C_SR2_TRA)) ){
+				I2C_ApplicationEventCallback(pI2CHandle, I2C_EV_DATA_RCV);
+			}
 		}
 	}
 
@@ -546,8 +563,15 @@ void I2C_EV_IRQHandling(I2Cx_Handle_t* pI2CHandle){
 		//TxE Flag is set
 		//Check we are on TX Mode, Master Mode and we have data to transmit:
 
-		if(pI2CHandle->TxRxState == I2C_BUSY_IN_TX){
+		if(pI2CHandle->TxRxState == I2C_BUSY_IN_TX && (pI2CHandle->pI2C->SR2 & (1 << I2C_SR2_MSL)) ){
+			//Master
 			I2C_MasterHandleTXEInterrupt(pI2CHandle);
+		} else {
+			//Slave
+			//Checks if it is in transmitter mode
+			if(pI2CHandle->pI2C->SR2 & (1 << I2C_SR2_TRA)){
+				I2C_ApplicationEventCallback(pI2CHandle, I2C_EV_DATA_REQ);
+			}
 		}
 	}
 
