@@ -30,7 +30,7 @@ typedef struct {
 typedef struct {
 	USARTx_RegDef_t *pUSARTx;
 	USARTx_Config_t USART_Config;
-} USART_Handle_t;
+} USARTx_Handle_t;
 
 /******************************************
  *              	APIS
@@ -40,12 +40,26 @@ typedef struct {
 void USART_PCLKControl(USARTx_RegDef_t *pUSARTx, uint8_t state);
 void USART_PeripheralCtrl(USARTx_RegDef_t *pUSARTx, uint8_t state);
 
+// --- Init and De-init
+void USART_Init(USARTx_Handle_t *pUSARTHandle);
+void USART_DeInit(USARTx_RegDef_t *pUSARTx);
+
+// --- Data Send And Receive ---
+void USART_SendData(USARTx_RegDef_t *pUSARTx, uint8_t *pTxBuffer, uint32_t len);
+void USART_ReceiveData(USARTx_RegDef_t *pUSARTx, uint8_t *pRxBuffer, uint32_t len);
+void USART_SendDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t len);
+void USART_ReceiveDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pRxBuffer, uint32_t len);
+
 // --- Flags ---
 uint8_t USART_GetFlagStatus(USARTx_RegDef_t *pUSARTx, uint8_t flag);
 void USART_ClearFlag(USARTx_RegDef_t *pUSARTx, uint8_t flag);
 
-// --- Interrupt Configuration ---
+// --- Interrupt Configuration And Handling ---
 void USART_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);
 void USART_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
+void USART_IRQHandling(USARTx_Handle_t *pUSARTHandle);
+
+// --- Application Callback
+void USART_ApplicationEventCallback(USARTx_Handle_t *pUSARTHandle, uint8_t event);
 
 #endif /* INC_STM32F407XX_USART_DRIVER_H_ */
