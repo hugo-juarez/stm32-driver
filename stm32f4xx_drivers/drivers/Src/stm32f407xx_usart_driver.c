@@ -54,6 +54,28 @@ void USART_PeripheralCtrl(USARTx_RegDef_t *pUSARTx, uint8_t state){
 	}
 }
 
+/******************************************
+ *            Init/De-Init
+ ******************************************/
+
+// --- Init ---
+
+// --- De-Init ---
+void USART_DeInit(USARTx_RegDef_t *pUSARTx){
+	if(pUSARTx == USART1){
+		USART1_REG_RESET();
+	} else if(pUSARTx == USART2){
+		USART2_REG_RESET();
+	} else if(pUSARTx == USART3){
+		USART3_REG_RESET();
+	} else if(pUSARTx == UART4){
+		UART4_REG_RESET();
+	} else if(pUSARTx == UART5){
+		UART5_REG_RESET();
+	} else if(pUSARTx == USART6){
+		USART6_REG_RESET();
+	}
+}
 
 /******************************************
  *              Flags
