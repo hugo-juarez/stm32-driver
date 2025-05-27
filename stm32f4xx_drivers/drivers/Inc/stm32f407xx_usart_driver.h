@@ -32,5 +32,20 @@ typedef struct {
 	USARTx_Config_t USART_Config;
 } USART_Handle_t;
 
+/******************************************
+ *              	APIS
+ ******************************************/
+
+// --- Peripheral  ---
+void USART_PCLKControl(USARTx_RegDef_t *pUSARTx, uint8_t state);
+void USART_PeripheralCtrl(USARTx_RegDef_t *pUSARTx, uint8_t state);
+
+// --- Flags ---
+uint8_t USART_GetFlagStatus(USARTx_RegDef_t *pUSARTx, uint8_t flag);
+void USART_ClearFlag(USARTx_RegDef_t *pUSARTx, uint8_t flag);
+
+// --- Interrupt Configuration ---
+void USART_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);
+void USART_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
 
 #endif /* INC_STM32F407XX_USART_DRIVER_H_ */
