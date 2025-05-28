@@ -44,7 +44,6 @@ void USART_PCLKControl(USARTx_RegDef_t *pUSARTx, uint8_t state){
 	}
 }
 
-
 // --- Peripheral EN/DI ---
 void USART_PeripheralCtrl(USARTx_RegDef_t *pUSARTx, uint8_t state){
 	if(state == ENABLE){
@@ -53,6 +52,7 @@ void USART_PeripheralCtrl(USARTx_RegDef_t *pUSARTx, uint8_t state){
 		pUSARTx->CR1 &= ~(1 << USART_CR1_UE);
 	}
 }
+
 
 /******************************************
  *            Init/De-Init
@@ -134,6 +134,105 @@ void USART_DeInit(USARTx_RegDef_t *pUSARTx){
 		USART6_REG_RESET();
 	}
 }
+
+/******************************************
+ *     Send And Receive Data (Polling)
+ ******************************************/
+
+// --- Send Data ---
+void USART_SendData(USARTx_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t len){
+
+	for(uint32_t i=0; i<len; i++){
+
+		// Wait till TXE
+		while(!USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_TXE));
+
+		if(pUSARTHandle->USART_Config.USART_WordLength == USART_WORDLEN_9BITS){
+			//******** 9-BIT Communication ********
+
+			//On a 9 bit communication the DR gets loaded 2 bytes but mask to only 9 bits
+			uint16_t *pData = (uint16_t *)pTxBuffer;
+			pUSARTHandle->pUSARTx->DR = (*pData & 0x01FF);
+
+			if(pUSARTHandle->USART_Config.USART_Parity == USART_PARITY_DISABLE){
+				//No parity is used therefore we are sending 9 bytes so we are sending more than 1 byte
+				pTxBuffer++;
+			}
+
+			pTxBuffer++;
+
+
+		} else {
+			//******** 8-BIT Communication ********
+
+			//8 bit data transfer
+			pUSARTHandle->pUSARTx->DR = *pTxBuffer;
+
+			//No need to check for parity bit since we either load 7 bits or the 8 gets overwritten
+
+			//Increase buffer address
+			pTxBuffer++;
+		}
+
+	}
+
+	//Wait till communication finishes
+	while(!USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_TC));
+
+}
+
+// --- Receive Data ---
+void USART_ReceiveData(USARTx_Handle_t *pUSARTHandle, uint8_t *pRxBuffer, uint32_t len){
+	for(uint32_t i = 0; i < len; i++){
+
+		//Wait till data is received RXNE
+		while(!USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_RXNE));
+
+		if(pUSARTHandle->USART_Config.USART_WordLength == USART_WORDLEN_9BITS){
+			//******** 9-BIT Communication ********
+
+			//If using parity bit we have 8 bits of data if not we have 9 bits
+			if(pUSARTHandle->USART_Config.USART_Parity == USART_PARITY_DISABLE){
+
+				//If we are on 9bit and we are not using a parity bit then the 9 bits are data
+				*((uint16_t*) pRxBuffer) = (pUSARTHandle->pUSARTx->DR & 0x01FF);
+
+				pRxBuffer++;
+				pRxBuffer++;
+
+			}else{
+
+				//If we are using parity bit with 9 bits only 8 are data
+				*pRxBuffer = (pUSARTHandle->pUSARTx->DR & 0xFF);
+				pRxBuffer++;
+			}
+
+
+		} else {
+			//******** 8-BIT Communication ********
+			//If using parity bit we have 7 bits of data if not we have 8 bits
+			if(pUSARTHandle->USART_Config.USART_Parity == USART_PARITY_DISABLE){
+				//If we are on 8bit and we are not using a parity bit then the 8 bits are data
+				*pRxBuffer = (pUSARTHandle->pUSARTx->DR & 0xFF);
+			}else{
+				//If we are using parity bit with 8 bits only 7 are data
+				*pRxBuffer = (pUSARTHandle->pUSARTx->DR & 0x7F);
+			}
+
+			//Increment buffer
+			pRxBuffer++;
+
+		}
+	}
+}
+
+/******************************************
+ *    Send And Receive Data (Interrupt)
+ ******************************************/
+
+// --- Send Data ---
+
+
 
 /******************************************
  *              Flags
