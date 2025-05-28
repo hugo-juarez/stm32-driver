@@ -80,9 +80,15 @@ typedef struct {
  *              	Flags
  ******************************************/
 
+// --- SR Flags ---
 #define USART_FLAG_TXE					(1 << USART_SR_TXE)
 #define USART_FLAG_RXNE					(1 << USART_SR_RXNE)
 #define USART_FLAG_TC					(1 << USART_SR_TC)
+
+// --- Interrupt Flags ---
+#define USART_FREE						0
+#define USART_BUSY_IN_TX				1
+#define USART_BUSY_IN_RX				1
 
 /******************************************
  *              	APIS
@@ -99,8 +105,8 @@ void USART_DeInit(USARTx_RegDef_t *pUSARTx);
 // --- Data Send And Receive ---
 void USART_SendData(USARTx_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t len);
 void USART_ReceiveData(USARTx_Handle_t *pUSARTHandle, uint8_t *pRxBuffer, uint32_t len);
-void USART_SendDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t len);
-void USART_ReceiveDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pRxBuffer, uint32_t len);
+uint8_t USART_SendDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t len);
+uint8_t USART_ReceiveDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pRxBuffer, uint32_t len);
 
 // --- Flags ---
 uint8_t USART_GetFlagStatus(USARTx_RegDef_t *pUSARTx, uint8_t flag);
