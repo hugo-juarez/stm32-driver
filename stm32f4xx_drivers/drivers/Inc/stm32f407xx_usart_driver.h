@@ -49,7 +49,7 @@ typedef struct {
 #define USART_STD_BAUD_2M				2000000
 #define USART_STD_BAUD_3M				3000000
 
-// --- @USART-StopBits ---
+// --- @USART_StopBits ---
 #define USART_STOPBITS_1				0
 #define USART_STOPBITS_0_5				1
 #define USART_STOPBITS_2				2
