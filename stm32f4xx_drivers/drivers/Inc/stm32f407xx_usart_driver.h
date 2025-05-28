@@ -16,18 +16,24 @@
 
 // --- Configuration Structure ---
 typedef struct {
-	uint8_t USART_Mode;
-	uint32_t USART_Baud;
-	uint8_t USART_StopBits;
-	uint8_t USART_WordLength;
-	uint8_t USART_Parity;
-	uint8_t USART_HWFlowControl;
+	uint8_t 	USART_Mode;
+	uint32_t 	USART_Baud;
+	uint8_t 	USART_StopBits;
+	uint8_t 	USART_WordLength;
+	uint8_t 	USART_Parity;
+	uint8_t 	USART_HWFlowControl;
 } USARTx_Config_t;
 
 // --- Handle Structure ---
 typedef struct {
-	USARTx_RegDef_t *pUSARTx;
-	USARTx_Config_t USART_Config;
+	USARTx_RegDef_t 	*pUSARTx;
+	USARTx_Config_t 	USART_Config;
+	uint8_t				TxBusyState;
+	uint32_t			TxLen;
+	uint8_t				*pTxBuffer;
+	uint8_t				RxBusyState;
+	uint32_t			RxLen;
+	uint8_t				*pRxBuffer;
 } USARTx_Handle_t;
 
 // --- @USART_Mode ---
