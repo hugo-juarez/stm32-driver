@@ -101,6 +101,7 @@ void USART_PeripheralCtrl(USARTx_RegDef_t *pUSARTx, uint8_t state);
 // --- Init and De-init
 void USART_Init(USARTx_Handle_t *pUSARTHandle);
 void USART_DeInit(USARTx_RegDef_t *pUSARTx);
+void USART_SetBaudRate(USARTx_RegDef_t *pUSARTx, uint32_t baudRate);
 
 // --- Data Send And Receive ---
 void USART_SendData(USARTx_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t len);

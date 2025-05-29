@@ -6,6 +6,7 @@
  */
 
 #include "stm32f407xx_usart_driver.h"
+#include "stm32f407xx_rcc_driver.h"
 
 /******************************************
  *              Peripherals
@@ -116,6 +117,9 @@ void USART_Init(USARTx_Handle_t *pUSARTHandle){
 	//Load Values to CR3
 	pUSARTHandle->pUSARTx->CR3 = tempreg;
 
+	//************ Baud Rate Config ************
+	USART_SetBaudRate(pUSARTHandle->pUSARTx, pUSARTHandle->USART_Config.USART_Baud);
+
 }
 
 // --- De-Init ---
@@ -133,6 +137,54 @@ void USART_DeInit(USARTx_RegDef_t *pUSARTx){
 	} else if(pUSARTx == USART6){
 		USART6_REG_RESET();
 	}
+}
+
+// --- Baud Rate Configuration ---
+void USART_SetBaudRate(USARTx_RegDef_t *pUSARTx, uint32_t baudRate){
+	//Temporal register to load into baud rate config
+	uint32_t tempreg = 0;
+
+	//Get the peripheral clock
+	uint32_t PCLKx;
+
+	if(pUSARTx == USART1 || pUSARTx == USART6){
+		//This are located in APB2
+		PCLKx = RCC_GetPCLK2Value();
+	} else {
+		//The rest of USART are in APB1
+		PCLKx = RCC_GetPCLK1Value();
+	}
+
+	//Getx USARTDIV value depending on oversampling
+	uint32_t usartdiv;
+	if(pUSARTx->CR1 & (1 << USART_CR1_OVER8)){
+		//If oversampling is 8
+		usartdiv = (PCLKx / (8 * baudRate)) * 100 ;
+	} else {
+		//Oversampling is 16
+		usartdiv = (PCLKx / (16 * baudRate)) * 100;
+	}
+
+	//Calculate Mantissa
+	uint32_t M_part = usartdiv/100;
+	tempreg |= M_part << 4;
+
+	//Get fraction part
+	uint32_t F_part = (usartdiv - (M_part * 100));
+
+	if(pUSARTx->CR1 & (1 << USART_CR1_OVER8)){
+		//Oversampling = 8
+		F_part = ((F_part * 8 + 50)/100) & 0x7;
+	} else {
+		//Oversampling = 16
+		F_part = ((F_part * 16 + 50)/100) & 0xF;
+	}
+
+	tempreg |= F_part;
+
+	//Load into BRR register
+	pUSARTx->BRR = tempreg;
+
 }
 
 /******************************************
@@ -226,12 +278,46 @@ void USART_ReceiveData(USARTx_Handle_t *pUSARTHandle, uint8_t *pRxBuffer, uint32
 	}
 }
 
+
 /******************************************
  *    Send And Receive Data (Interrupt)
  ******************************************/
 
 // --- Send Data ---
+uint8_t USART_SendDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint32_t len){
 
+	uint8_t txstate = pUSARTHandle->TxBusyState;
+
+	if(txstate != USART_BUSY_IN_TX){
+		pUSARTHandle->TxBusyState = USART_BUSY_IN_TX;
+		pUSARTHandle->TxLen = len;
+		pUSARTHandle->pTxBuffer = pTxBuffer;
+
+		//Enable TXE intterupt
+		pUSARTHandle->pUSARTx->CR1 |= (1 << USART_CR1_TXEIE);
+
+		//Enable TC interrupt
+		pUSARTHandle->pUSARTx->CR1 |= (1 << USART_CR1_TCIE);
+	}
+
+	return txstate;
+}
+
+// --- Receive Data ---
+uint8_t USART_ReceiveDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pRxBuffer, uint32_t len){
+
+	uint8_t rxstate = pUSARTHandle->RxBusyState;
+
+	if(rxstate != USART_BUSY_IN_RX){
+		pUSARTHandle->RxBusyState = USART_BUSY_IN_RX;
+		pUSARTHandle->RxLen = len;
+		pUSARTHandle->pRxBuffer = pRxBuffer;
+
+		//Enable RXNE intterupt
+		pUSARTHandle->pUSARTx->CR1 |= (1 << USART_CR1_RXNEIE);
+	}
+	return rxstate;
+}
 
 
 /******************************************
