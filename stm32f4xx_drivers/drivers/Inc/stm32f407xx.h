@@ -513,6 +513,7 @@ typedef struct {
 #define IRQ_NO_I2C1_EV				31
 #define IRQ_NO_I2C1_ER				32
 
+#define IRQ_NO_USART2				38
 
 
 #endif /* INC_STM32F407XX_H_ */

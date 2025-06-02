@@ -7,6 +7,7 @@
 
 #include "stm32f407xx_usart_driver.h"
 #include "stm32f407xx_rcc_driver.h"
+#include <stdio.h>
 
 
 /******************************************
@@ -314,6 +315,10 @@ uint8_t USART_ReceiveDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pRxBuffer, u
 		pUSARTHandle->RxLen = len;
 		pUSARTHandle->pRxBuffer = pRxBuffer;
 
+		//Clear remaining data
+		(void) pUSARTHandle->pUSARTx->DR;
+
+
 		//Enable RXNE intterupt
 		pUSARTHandle->pUSARTx->CR1 |= (1 << USART_CR1_RXNEIE);
 	}
@@ -519,6 +524,9 @@ void USART_HandleTCInterrupt(USARTx_Handle_t *pUSARTHandle){
 	}
 
 	//Data transmited entirely therefore tx was completed
+
+	//Clean Flag
+	USART_ClearFlag(pUSARTHandle->pUSARTx, USART_FLAG_TC);
 
 	//Close Send Communication
 	USART_CloseSendData(pUSARTHandle);
