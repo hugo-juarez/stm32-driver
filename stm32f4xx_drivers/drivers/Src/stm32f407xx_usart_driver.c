@@ -159,10 +159,10 @@ void USART_SetBaudRate(USARTx_RegDef_t *pUSARTx, uint32_t baudRate){
 	uint32_t usartdiv;
 	if(pUSARTx->CR1 & (1 << USART_CR1_OVER8)){
 		//If oversampling is 8
-		usartdiv = (PCLKx / (8 * baudRate)) * 100 ;
+		usartdiv = ((25 * PCLKx) / (2 * baudRate)) ;
 	} else {
 		//Oversampling is 16
-		usartdiv = (PCLKx / (16 * baudRate)) * 100;
+		usartdiv = ((25 * PCLKx) / (4 * baudRate)) ;
 	}
 
 	//Calculate Mantissa
