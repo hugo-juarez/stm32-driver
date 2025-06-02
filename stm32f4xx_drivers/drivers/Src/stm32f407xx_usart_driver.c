@@ -8,6 +8,7 @@
 #include "stm32f407xx_usart_driver.h"
 #include "stm32f407xx_rcc_driver.h"
 
+
 /******************************************
  *              Peripherals
  ******************************************/
@@ -325,7 +326,7 @@ uint8_t USART_ReceiveDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pRxBuffer, u
  ******************************************/
 
 // --- Get Flag ---
-uint8_t USART_GetFlagStatus(USARTx_RegDef_t *pUSARTx, uint8_t flag){
+uint8_t USART_GetFlagStatus(USARTx_RegDef_t *pUSARTx, uint32_t flag){
 	if(pUSARTx->SR & flag){
 		return SET;
 	} else {
@@ -335,7 +336,7 @@ uint8_t USART_GetFlagStatus(USARTx_RegDef_t *pUSARTx, uint8_t flag){
 
 
 // --- Clear Flag ---
-void USART_ClearFlag(USARTx_RegDef_t *pUSARTx, uint8_t flag){
+void USART_ClearFlag(USARTx_RegDef_t *pUSARTx, uint32_t flag){
 	pUSARTx->SR &= ~flag;
 }
 
@@ -362,4 +363,275 @@ void USART_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority){
 	NVIC->IPR[IRQNumber] = (IRQPriority << (8 - NO_PR_BITS_IMPLEMENTED));
 }
 
+/******************************************
+ *          Interrupt Handle
+ ******************************************/
+
+// --- Interrupt Handlers Prototype definition ---
+static void USART_HandleTXEInterrupt(USARTx_Handle_t *pUSARTHandle);
+static void USART_HandleTCInterrupt(USARTx_Handle_t *pUSARTHandle);
+static void USART_HandleRXNEInterrupt(USARTx_Handle_t *pUSARTHandle);
+
+// --- Interrupt Handling ---
+void USART_IRQHandling(USARTx_Handle_t *pUSARTHandle){
+
+	//******** TXE Interrupt ********
+	uint8_t temp1 = USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_TXE);
+	uint32_t temp2 = pUSARTHandle->pUSARTx->CR1 & USART_FLAG_TXEIE;
+	uint8_t temp3 = pUSARTHandle->TxBusyState;
+
+	if( temp1 && temp2 && temp3 ){
+		USART_HandleTXEInterrupt(pUSARTHandle);
+	}
+
+	//******** TC Interrupt ********
+	temp1 = USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_TC);
+	temp2 = pUSARTHandle->pUSARTx->CR1 & USART_FLAG_TCIE;
+	temp3 = pUSARTHandle->TxBusyState;
+
+	if( temp1 && temp2 &&temp3 ){
+		USART_HandleTCInterrupt(pUSARTHandle);
+	}
+
+	//******** RXNE Interrupt ********
+	temp1 = USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_RXNE);
+	temp2 = pUSARTHandle->pUSARTx->CR1 & USART_FLAG_RXNEIE;
+	temp3 = pUSARTHandle->RxBusyState;
+
+	if( temp1 && temp2 && temp3 ){
+		USART_HandleRXNEInterrupt(pUSARTHandle);
+	}
+
+	//******** CTS Interrupt ********
+	temp1 = USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_CTS);
+	temp2 = pUSARTHandle->pUSARTx->CR3 & USART_FLAG_CTSIE;
+
+	if(temp1 && temp2){
+		//Clear CTS Flag
+		USART_ClearFlag(pUSARTHandle->pUSARTx, USART_FLAG_CTS);
+
+		//Callback Event
+		USART_ApplicationEventCallback(pUSARTHandle, USART_EV_CTS);
+	}
+
+	//******** IDLE Interrupt ********
+	temp1 = USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_IDLE);
+	temp2 = pUSARTHandle->pUSARTx->CR1 & USART_FLAG_IDLEIE;
+
+	if(temp1 && temp2){
+		//Clear CTS Flag
+		USART_ClearFlag(pUSARTHandle->pUSARTx, USART_FLAG_IDLE);
+
+		//Callback Event
+		USART_ApplicationEventCallback(pUSARTHandle, USART_EV_IDLE);
+	}
+
+	//******** ORE Interrupt ********
+	temp1 = USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_ORE);
+	temp2 = pUSARTHandle->pUSARTx->CR1 & USART_FLAG_RXNEIE;
+
+	if(temp1 && temp2){
+
+		//Cleaning of this event should happen from App Callback
+
+		//Callback Event
+		USART_ApplicationEventCallback(pUSARTHandle, USART_EV_ORE);
+	}
+
+	//******** Error Interrupt ********
+	temp1 = pUSARTHandle->pUSARTx->CR3 & USART_FLAG_EIE;
+
+	if(temp1){
+
+		// Framing Error
+		temp2 = USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_FE);
+
+		if(temp2){
+			USART_ApplicationEventCallback(pUSARTHandle, USART_ER_FE);
+		}
+
+		// Noise Detect
+		temp2 = USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_NF);
+
+		if(temp2){
+			USART_ApplicationEventCallback(pUSARTHandle, USART_ER_NF);
+		}
+
+		//Overrun Error
+		temp2 = USART_GetFlagStatus(pUSARTHandle->pUSARTx, USART_FLAG_ORE);
+
+		if(temp2){
+			USART_ApplicationEventCallback(pUSARTHandle, USART_ER_ORE);
+		}
+	}
+
+}
+
+// --- USART TXE Interrput Handler ---
+void USART_HandleTXEInterrupt(USARTx_Handle_t *pUSARTHandle){
+
+	//Check If USART is on transmission mode
+
+	//If there is nothing to transmit don't do nothing
+	if(pUSARTHandle->TxLen <=0){
+		return;
+	}
+
+	if(pUSARTHandle->USART_Config.USART_WordLength == USART_WORDLEN_9BITS){
+		//******** 9-BIT Communication ********
+
+		//On a 9 bit communication the DR gets loaded 2 bytes but mask to only 9 bits
+		uint16_t *pData = (uint16_t *) pUSARTHandle->pTxBuffer;
+		pUSARTHandle->pUSARTx->DR = (*pData & 0x01FF);
+
+		if(pUSARTHandle->USART_Config.USART_Parity == USART_PARITY_DISABLE){
+			//No parity is used therefore we are sending 9 bytes so we are sending more than 1 byte
+			pUSARTHandle->pTxBuffer++;
+		}
+
+		pUSARTHandle->pTxBuffer++;
+
+
+	} else {
+		//******** 8-BIT Communication ********
+
+		//8 bit data transfer
+		pUSARTHandle->pUSARTx->DR = *pUSARTHandle->pTxBuffer;
+
+		//No need to check for parity bit since we either load 7 bits or the 8 gets overwritten
+
+		//Increase buffer address
+		pUSARTHandle->pTxBuffer++;
+	}
+
+	//Decrement TxLen Count
+	pUSARTHandle->TxLen--;
+
+
+}
+
+// --- USART TC Interrupt Handler ---
+void USART_HandleTCInterrupt(USARTx_Handle_t *pUSARTHandle){
+
+	//If there are still data to transmit do nothing
+	if(pUSARTHandle->TxLen > 0){
+		return;
+	}
+
+	//Data transmited entirely therefore tx was completed
+
+	//Close Send Communication
+	USART_CloseSendData(pUSARTHandle);
+
+	//Callback TX Completed
+	USART_ApplicationEventCallback(pUSARTHandle, USART_EV_TX_CMPLT);
+}
+
+// --- USART RXE Interrupt Handler ---
+void USART_HandleRXNEInterrupt(USARTx_Handle_t *pUSARTHandle){
+
+	//We should only read when len > 0
+	if(pUSARTHandle->RxLen <=0){
+		return;
+	}
+
+	if(pUSARTHandle->USART_Config.USART_WordLength == USART_WORDLEN_9BITS){
+		//******** 9-BIT Communication ********
+
+		//If using parity bit we have 8 bits of data if not we have 9 bits
+		if(pUSARTHandle->USART_Config.USART_Parity == USART_PARITY_DISABLE){
+
+			//If we are on 9bit and we are not using a parity bit then the 9 bits are data
+			*((uint16_t*) pUSARTHandle->pRxBuffer) = (pUSARTHandle->pUSARTx->DR & 0x01FF);
+
+			pUSARTHandle->pRxBuffer++;
+			pUSARTHandle->pRxBuffer++;
+
+		}else{
+
+			//If we are using parity bit with 9 bits only 8 are data
+			*(pUSARTHandle->pRxBuffer) = (pUSARTHandle->pUSARTx->DR & 0xFF);
+			pUSARTHandle->pRxBuffer++;
+		}
+
+
+	} else {
+		//******** 8-BIT Communication ********
+		//If using parity bit we have 7 bits of data if not we have 8 bits
+		if(pUSARTHandle->USART_Config.USART_Parity == USART_PARITY_DISABLE){
+			//If we are on 8bit and we are not using a parity bit then the 8 bits are data
+			*(pUSARTHandle->pRxBuffer) = (pUSARTHandle->pUSARTx->DR & 0xFF);
+		}else{
+			//If we are using parity bit with 8 bits only 7 are data
+			*(pUSARTHandle->pRxBuffer) = (pUSARTHandle->pUSARTx->DR & 0x7F);
+		}
+
+		//Increment buffer
+		pUSARTHandle->pRxBuffer++;
+	}
+
+	pUSARTHandle->RxLen--;
+
+	//Reception Done
+	if(pUSARTHandle->RxLen == 0){
+
+		//Close Receive Communication
+		USART_CloseReceiveData(pUSARTHandle);
+
+		//Send Application Callback
+		USART_ApplicationEventCallback(pUSARTHandle, USART_EV_RX_CMPLT);
+	}
+}
+
+/******************************************
+ *      Close Communication Handlers
+ ******************************************/
+
+// --- Close Send Data ---
+void USART_CloseSendData(USARTx_Handle_t *pUSARTHandle){
+	pUSARTHandle->TxBusyState = USART_FREE;
+	pUSARTHandle->TxLen = 0;
+	pUSARTHandle->pTxBuffer = NULL;
+
+	//Disable TXE intterupt
+	pUSARTHandle->pUSARTx->CR1 &= ~(1 << USART_CR1_TXEIE);
+
+	//Disable TC interrupt
+	pUSARTHandle->pUSARTx->CR1 &= ~(1 << USART_CR1_TCIE);
+}
+
+// --- Close Receive Data ---
+void USART_CloseReceiveData(USARTx_Handle_t *pUSARTHandle){
+	pUSARTHandle->RxBusyState = USART_FREE;
+	pUSARTHandle->RxLen = 0;
+	pUSARTHandle->pRxBuffer = NULL;
+
+	//Enable RXNE intterupt
+	pUSARTHandle->pUSARTx->CR1 &= ~(1 << USART_CR1_RXNEIE);
+}
+
+/******************************************
+ * 		  	   Other APIs
+ ******************************************/
+
+void USART_ClearErrorFlag(USARTx_RegDef_t *pUSARTx){
+	uint32_t temp;
+
+	//Read from SR
+	temp = pUSARTx->SR;
+
+	//Read from DR
+	temp = pUSARTx->DR;
+
+	(void) temp;
+}
+
+
+/******************************************
+ * 		  Application Callback
+ ******************************************/
+
+__weak void USART_ApplicationEventCallback(USARTx_Handle_t *pUSARTHandle, uint8_t event){
+
+}
 

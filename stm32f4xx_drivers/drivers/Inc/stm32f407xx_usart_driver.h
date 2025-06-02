@@ -84,11 +84,42 @@ typedef struct {
 #define USART_FLAG_TXE					(1 << USART_SR_TXE)
 #define USART_FLAG_RXNE					(1 << USART_SR_RXNE)
 #define USART_FLAG_TC					(1 << USART_SR_TC)
+#define USART_FLAG_CTS					(1 << USART_SR_CTS)
+#define USART_FLAG_IDLE					(1 << USART_SR_IDLE)
+#define USART_FLAG_ORE					(1 << USART_SR_ORE)
+#define USART_FLAG_FE					(1 << USART_SR_FE)
+#define USART_FLAG_NF					(1 << USART_SR_NF)
+
+// --- CR1 Flags ---
+#define USART_FLAG_TXEIE				(1 << USART_CR1_TXEIE)
+#define USART_FLAG_RXNEIE				(1 << USART_CR1_RXNEIE)
+#define USART_FLAG_TCIE					(1 << USART_CR1_TCIE)
+#define USART_FLAG_IDLEIE				(1 << USART_CR1_IDLEIE)
+#define USART_FLAG_PEIE					(1 << USART_CR1_PEIE)
+
+// --- CR2 Flags ---
+#define USART_FLAG_LBDIE				(1 << USART_CR2_LBDIE)
+
+// --- CR3 Flags ---
+#define USART_FLAG_CTSIE				(1 << USART_CR3_CTSIE)
+#define USART_FLAG_EIE					(1 << USART_CR3_EIE)
 
 // --- Interrupt Flags ---
 #define USART_FREE						0
 #define USART_BUSY_IN_TX				1
 #define USART_BUSY_IN_RX				1
+
+// --- Application Events ---
+#define USART_EV_TX_CMPLT				1
+#define USART_EV_RX_CMPLT				2
+#define USART_EV_CTS					3
+#define USART_EV_IDLE					4
+#define USART_EV_ORE					5
+
+// --- Application Errors ---
+#define USART_ER_FE						6
+#define USART_ER_NF						7
+#define USART_ER_ORE					8
 
 /******************************************
  *              	APIS
@@ -110,16 +141,22 @@ uint8_t USART_SendDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pTxBuffer, uint
 uint8_t USART_ReceiveDataIT(USARTx_Handle_t *pUSARTHandle, uint8_t *pRxBuffer, uint32_t len);
 
 // --- Flags ---
-uint8_t USART_GetFlagStatus(USARTx_RegDef_t *pUSARTx, uint8_t flag);
-void USART_ClearFlag(USARTx_RegDef_t *pUSARTx, uint8_t flag);
+uint8_t USART_GetFlagStatus(USARTx_RegDef_t *pUSARTx, uint32_t flag);
+void USART_ClearFlag(USARTx_RegDef_t *pUSARTx, uint32_t flag);
 
 // --- Interrupt Configuration And Handling ---
 void USART_IRQInterruptConfig(uint8_t IRQNumber, uint8_t state);
 void USART_IRQPriorityConfig(uint8_t IRQNumber, uint32_t IRQPriority);
 void USART_IRQHandling(USARTx_Handle_t *pUSARTHandle);
 
-// --- Application Callback
+// --- Interrupt Communication Closing ---
+void USART_CloseSendData(USARTx_Handle_t *pUSARTHandle);
+void USART_CloseReceiveData(USARTx_Handle_t *pUSARTHandle);
+
+// --- Application Callback ---
 void USART_ApplicationEventCallback(USARTx_Handle_t *pUSARTHandle, uint8_t event);
 
+// --- Other APIs ---
+void USART_ClearErrorFlag(USARTx_RegDef_t *pUSARTx);
 
 #endif /* INC_STM32F407XX_USART_DRIVER_H_ */
