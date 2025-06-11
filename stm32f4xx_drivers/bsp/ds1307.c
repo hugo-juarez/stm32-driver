@@ -175,6 +175,7 @@ static void ds1307_i2c_pin_config(void){
 	i2c_sda.GPIOx_PinConfig.GPIOx_PinAltFunMode = 0x4;
 	i2c_sda.GPIOx_PinConfig.GPIOx_PinMode = GPIOx_MODE_ALTFN;
 	i2c_sda.GPIOx_PinConfig.GPIOx_PinNumber = DS1307_I2C_SDA_PIN;
+	i2c_sda.GPIOx_PinConfig.GPIOx_PinOType = GPIOx_OUT_TYPE_OD;
 	i2c_sda.GPIOx_PinConfig.GPIOx_PinPuPdControl = DS1307_I2C_PUPD;
 	i2c_sda.GPIOx_PinConfig.GPIOx_PinSpeed = GPIOx_OSPEED_FAST;
 
@@ -185,6 +186,7 @@ static void ds1307_i2c_pin_config(void){
 	i2c_scl.GPIOx_PinConfig.GPIOx_PinAltFunMode = 0x4;
 	i2c_scl.GPIOx_PinConfig.GPIOx_PinMode = GPIOx_MODE_ALTFN;
 	i2c_scl.GPIOx_PinConfig.GPIOx_PinNumber = DS1307_I2C_SCL_PIN;
+	i2c_scl.GPIOx_PinConfig.GPIOx_PinOType = GPIOx_OUT_TYPE_OD;
 	i2c_scl.GPIOx_PinConfig.GPIOx_PinPuPdControl = DS1307_I2C_PUPD;
 	i2c_scl.GPIOx_PinConfig.GPIOx_PinSpeed = GPIOx_OSPEED_FAST;
 
