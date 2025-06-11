@@ -8,10 +8,14 @@
 #include <stdio.h>
 #include "ds1307.h"
 
+// --- Macros ---
+#define SYSTICK_TIM_CLK		16000000UL
+
 // --- Helper Function Prototypes ---
 char* get_day_of_week(uint8_t i);
 char* time_to_string(RTC_time_t* pRTCTime);
 char* date_to_string(RTC_date_t* pRTCDate);
+void init_systick_timer(uint32_t tick_hz);
 
 int main(void){
 
@@ -38,6 +42,18 @@ int main(void){
 	ds1307_set_current_time(&time);
 	ds1307_set_current_date(&date);
 
+	init_systick_timer(1);
+
+	while(1);
+
+	return 0;
+}
+
+// --- Systick Handler ---
+void SysTick_Handler(void){
+	RTC_time_t time;
+	RTC_date_t date;
+
 	ds1307_get_current_time(&time);
 	ds1307_get_current_date(&date);
 
@@ -51,10 +67,6 @@ int main(void){
 	}
 
 	printf("Current date = %s <%s>\n", date_to_string(&date), get_day_of_week(date.day));
-
-	while(1);
-
-	return 0;
 }
 
 // --- Get day of the week ---
@@ -101,5 +113,28 @@ char* date_to_string(RTC_date_t* pRTCDate){
 	buf[8] = '\0';
 
 	return buf;
+
+}
+
+// --- Systick sec interrupt init ---
+void init_systick_timer(uint32_t tick_hz){
+	uint32_t *pSRVR = (uint32_t*)0xE000E014;
+	uint32_t *pSCSR = (uint32_t*)0xE000E010;
+
+    /* calculation of reload value */
+    uint32_t count_value = (SYSTICK_TIM_CLK/tick_hz)-1;
+
+    //Clear the value of SVR
+    *pSRVR &= ~(0x00FFFFFFFF);
+
+    //load the value in to SVR
+    *pSRVR |= count_value;
+
+    //do some settings
+    *pSCSR |= ( 1 << 1); //Enables SysTick exception request:
+    *pSCSR |= ( 1 << 2);  //Indicates the clock source, processor clock source
+
+    //enable the systick
+    *pSCSR |= ( 1 << 0); //enables the counter
 
 }
