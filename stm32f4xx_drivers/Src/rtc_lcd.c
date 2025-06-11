@@ -51,3 +51,9 @@ int main(void){
 	return 0;
 }
 
+
+char* get_day_of_week(uint8_t i){
+	char* days[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+
+	return days[i-1];
+}
