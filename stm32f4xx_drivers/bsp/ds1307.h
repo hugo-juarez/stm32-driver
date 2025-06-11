@@ -8,12 +8,22 @@
 #ifndef DS1307_H_
 #define DS1307_H_
 
+#include "stm32f407xx.h"
+
 /******************************************
  *              CONFIGURATION
  ******************************************/
 
 // --- Address ---
 #define DS1307_I2C_ADDR				0x68
+
+// --- Peripheral Config ---
+#define DS1307_I2C					I2C1
+#define DS1307_I2C_GPIO_PORT		GPIOB
+#define DS1307_I2C_SCL_PIN			GPIOx_PIN_NO_6
+#define DS1307_I2C_SDA_PIN			GPIOx_PIN_NO_7
+#define DS1307_I2C_SPEED			I2C_SCL_SPEED_SM
+#define DS1307_I2C_PUPD				GPIOx_PUPDR_UP
 
 // --- Register Addresses ---
 #define DS1307_ADDR_SEC				0x00
@@ -40,7 +50,7 @@
 
 // --- Date Struct ---
 typedef struct {
-	uint8_t data;
+	uint8_t date;
 	uint8_t month;
 	uint8_t year;
 	uint8_t day;
@@ -67,7 +77,7 @@ void ds1307_set_current_time(RTC_time_t *pRTCTime);
 void ds1307_get_current_time(RTC_time_t *pRTCTime);
 
 // --- Set/Get Current Date ---
-void ds1307_set_current_time(RTC_date_t *pRTCDate);
-void ds1307_get_current_time(RTC_date_t *pRTCDate);
+void ds1307_set_current_date(RTC_date_t *pRTCDate);
+void ds1307_get_current_date(RTC_date_t *pRTCDate);
 
 #endif /* DS1307_H_ */
