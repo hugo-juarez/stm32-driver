@@ -212,7 +212,7 @@ static void lcd_enable(void){
 	GPIOx_WritePin(LCD_GPIO_PORT, LCD_GPIO_EN, SET);
 	udelay(10);
 	GPIOx_WritePin(LCD_GPIO_PORT, LCD_GPIO_EN, RESET);
-	mdelay(100);
+	udelay(100);
 }
 
 // --- Milisecond delay ---
