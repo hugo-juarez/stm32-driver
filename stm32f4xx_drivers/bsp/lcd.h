@@ -38,6 +38,9 @@
 void lcd_init(void);
 void lcd_send_command(uint8_t cmd);
 void lcd_send_char(uint8_t data);
+void lcd_send_string(char *message);
 void lcd_display_clear(void);
+void lcd_return_home(void);
+void lcd_set_cursor(uint8_t row, uint8_t col);
 
 #endif /* LCD_H_ */

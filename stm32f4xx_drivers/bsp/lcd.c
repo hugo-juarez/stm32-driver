@@ -130,9 +130,10 @@ void lcd_send_command(uint8_t cmd){
 }
 
 /******************************************
- *        	  LCD Send Char
+ *        	  LCD Send Data
  ******************************************/
 
+// --- Send Char ---
 void lcd_send_char(uint8_t data){
 	//RS=1 We are sending data
 	GPIOx_WritePin(LCD_GPIO_PORT, LCD_GPIO_RS, SET);
@@ -147,6 +148,14 @@ void lcd_send_char(uint8_t data){
 	write_4_bits(data & 0xF);
 }
 
+// --- Send String ---
+void lcd_send_string(char *message){
+
+	do{
+		lcd_send_char((uint8_t)*message++);
+	} while (*message != '\0');
+}
+
 /******************************************
  *        	  LCD Clear Display
  ******************************************/
@@ -154,6 +163,33 @@ void lcd_send_char(uint8_t data){
 void lcd_display_clear(void){
 	lcd_send_command(LCD_CMD_DIS_CLEAR);
 	mdelay(2);
+}
+
+/******************************************
+ *        	  LCD Return Home
+ ******************************************/
+
+void lcd_return_home(void){
+	lcd_send_command(LCD_CMD_DIS_RETURN_HOME);
+	mdelay(2);
+}
+
+/******************************************
+ *        	  LCD Set Cursor
+ ******************************************/
+
+void lcd_set_cursor(uint8_t row, uint8_t col){
+	col--;
+	switch(row){
+		case 1:
+			lcd_send_command((col |= 0x80));
+			break;
+		case 2:
+			lcd_send_command((col |= 0x80));
+			break;
+		default:
+			break;
+	}
 }
 
 /******************************************
