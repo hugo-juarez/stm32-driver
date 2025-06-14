@@ -185,7 +185,7 @@ void lcd_set_cursor(uint8_t row, uint8_t col){
 			lcd_send_command((col |= 0x80));
 			break;
 		case 2:
-			lcd_send_command((col |= 0x80));
+			lcd_send_command((col |= 0xC0));
 			break;
 		default:
 			break;
