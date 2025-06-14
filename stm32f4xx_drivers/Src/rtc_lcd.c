@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include "ds1307.h"
+#include "lcd.h"
 
 // --- Macros ---
 #define SYSTICK_TIM_CLK		16000000UL
@@ -23,6 +24,10 @@ int main(void){
 	RTC_date_t date;
 
 	printf("RTC test \n");
+
+	lcd_init();
+
+	lcd_send_string("LCD Test ...");
 
 	if( ds1307_init() ){
 		printf("RTC Init has failed");
@@ -59,14 +64,22 @@ void SysTick_Handler(void){
 
 	char *am_pm;
 
+	lcd_display_clear();
+	lcd_return_home();
+
 	if(time.time_format != TIME_FORMAT_24HRS){
 		am_pm = (time.time_format == TIME_FORMAT_12HRS_PM) ? "PM" : "AM";
-		printf("Current time = %s %s\n", time_to_string(&time), am_pm);
+		//printf("Current time = %s %s\n", time_to_string(&time), am_pm);
+		lcd_send_string(time_to_string(&time));
+		lcd_send_string(am_pm);
 	}else{
-		printf("Current time = %s\n", time_to_string(&time));
+		//printf("Current time = %s\n", time_to_string(&time));
+		lcd_send_string(time_to_string(&time));
 	}
 
-	printf("Current date = %s <%s>\n", date_to_string(&date), get_day_of_week(date.day));
+	//printf("Current date = %s <%s>\n", date_to_string(&date), get_day_of_week(date.day));
+	lcd_set_cursor(2, 1);
+	lcd_send_string(date_to_string(&date));
 }
 
 // --- Get day of the week ---
