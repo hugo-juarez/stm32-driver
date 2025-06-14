@@ -10,6 +10,9 @@
 
 // --- Helper function prototypes ---
 static void write_4_bits(uint8_t val);
+static void lcd_enable(void);
+static void mdelay(uint32_t count);
+static void udelay(uint32_t count);
 
 /******************************************
  *        	 	LCD Init
@@ -90,8 +93,67 @@ void lcd_init(void){
 	//Write initialization
 	write_4_bits(0x3);
 
-	//Method is 4 bit
+	//Write initialization
 	write_4_bits(0x2);
+
+	//Function set
+	lcd_send_command(LCD_CMD_4DL_2N_5X8F);
+
+	//Display ON and Cursor ON
+	lcd_send_command(LCD_CMD_DION_CURON);
+
+	//Clear Display
+	lcd_display_clear();
+
+	//Entry Mode Set
+	lcd_send_command(LCD_CMD_IN_ADD);
+
+
+}
+
+/******************************************
+ *        	  LCD Send Command
+ ******************************************/
+
+void lcd_send_command(uint8_t cmd){
+	//RS=0 For sending commands
+	GPIOx_WritePin(LCD_GPIO_PORT, LCD_GPIO_RS, RESET);
+
+	//RW=0 Writing
+	GPIOx_WritePin(LCD_GPIO_PORT, LCD_GPIO_RW, RESET);
+
+	//Sending higher nibble
+	write_4_bits(cmd >> 4);
+
+	//Sending lower nibble
+	write_4_bits(cmd & 0xF);
+}
+
+/******************************************
+ *        	  LCD Send Char
+ ******************************************/
+
+void lcd_send_char(uint8_t data){
+	//RS=1 We are sending data
+	GPIOx_WritePin(LCD_GPIO_PORT, LCD_GPIO_RS, SET);
+
+	//RW=0 Writing
+	GPIOx_WritePin(LCD_GPIO_PORT, LCD_GPIO_RW, RESET);
+
+	//Sending higher nibble
+	write_4_bits(data >> 4);
+
+	//Sending lower nibble
+	write_4_bits(data & 0xF);
+}
+
+/******************************************
+ *        	  LCD Clear Display
+ ******************************************/
+
+void lcd_display_clear(void){
+	lcd_send_command(LCD_CMD_DIS_CLEAR);
+	mdelay(2);
 }
 
 /******************************************
@@ -108,21 +170,6 @@ static void write_4_bits(uint8_t val){
 	lcd_enable();
 }
 
-// --- Send Command ---
-static void lcd_send_command(uint8_t cmd){
-	//RS=0 For sending commands
-	GPIOx_WritePin(LCD_GPIO_PORT, LCD_GPIO_RS, RESET);
-
-	//RW=0 Writing commands
-	GPIOx_WritePin(LCD_GPIO_PORT, LCD_GPIO_RW, RESET);
-
-	//Sending higher nibble
-	write_4_bits(cmd >> 4);
-
-	//Sending lower nibble
-	write_4_bits(cmd & 0xF);
-}
-
 // --- LCD Enable ---
 static void lcd_enable(void){
 	//Hight to low in Enable line
@@ -130,5 +177,15 @@ static void lcd_enable(void){
 	udelay(10);
 	GPIOx_WritePin(LCD_GPIO_PORT, LCD_GPIO_EN, RESET);
 	mdelay(100);
+}
+
+// --- Milisecond delay ---
+static void mdelay(uint32_t cnt){
+	for(uint32_t i=0; i < (cnt * 1000); i++);
+}
+
+// --- Nanosecond delay ---
+static void udelay(uint32_t cnt){
+	for(uint32_t i=0; i < cnt; i++);
 }
 
